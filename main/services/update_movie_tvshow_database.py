@@ -14,22 +14,22 @@ def update_movies_tvshows():
     movie_tvshow_database_id = os.environ.get('MOVIE_TVSHOW_DB_ID')
     notion_movie_tvshow_database_url = os.path.join(notion_database_url,movie_tvshow_database_id,"query")
     token = os.environ.get('NOTION_TOKEN')
-    data = json.dumps({
-        "filter": {
-            "property": "temp",
-            "rich_text": {
-                "is_empty": True
-            }
-        }
-    })
     # data = json.dumps({
     #     "filter": {
-    #         "timestamp": "last_edited_time",
-    #         "last_edited_time": {
-    #             "on_or_after": ten_minutes_ago_gmt.strftime("%Y-%m-%dT%H:%M:%SZ")
+    #         "property": "temp",
+    #         "rich_text": {
+    #             "is_empty": True
     #         }
     #     }
     # })
+    data = json.dumps({
+        "filter": {
+            "timestamp": "last_edited_time",
+            "last_edited_time": {
+                "on_or_after": ten_minutes_ago_gmt.strftime("%Y-%m-%dT%H:%M:%SZ")
+            }
+        }
+    })
     headers = {
         "Authorization": f"Bearer {token}",
         "Notion-Version":"2022-02-22",
@@ -43,7 +43,7 @@ def update_movies_tvshows():
         movie_tvshow_details = get_tmdb_movies_tvshows_details(title,type)
         if movie_tvshow_details:
             print(f"Started Updating properties for {title}")
-            update_movie_tvshow_properties(id,type,movie_tvshow_details,movie_tvshow_database_id)
+            update_movie_tvshow_properties(id,type,movie_tvshow_details)
             print(f"Completed Updating properties for {title}")
 
 
@@ -75,7 +75,7 @@ def get_tmdb_movies_tvshows_details(title,type):
     
 
 
-def update_movie_tvshow_properties(id,type,movie_tvshow_details,movie_tvshow_database_id):
+def update_movie_tvshow_properties(id,type,movie_tvshow_details):
     tmdb_image_url = os.environ.get('TMDB_IMAGE_URL')
     notion_url = os.environ.get('NOTION_URL')
     notion_page_url = os.path.join(notion_url,'pages')
