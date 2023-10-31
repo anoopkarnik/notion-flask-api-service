@@ -8,7 +8,7 @@ import time
 
 
 
-def create_calender_page():
+def create_calendar_page():
     notion_url = os.environ.get('NOTION_URL')
     token = os.environ.get('NOTION_TOKEN')
     headers = {
@@ -36,7 +36,9 @@ def create_calender_page():
         repeat_number = data['Repeat Number']['number']
         local_tz = pytz.timezone(time_zone)
         local_time = datetime.datetime.now(local_tz)
-        start_date = datetime.datetime.strptime(data['Start Date']['date']['start'])
+        start_date = local_tz.localize(datetime.datetime.strptime(data['Start Date']['date']['start'],'%Y-%m-%d'))
+        if (start_date < local_time):
+            start_date = local_time
         scheduled_time = local_tz.localize(datetime.datetime.strptime(time, '%H%M').replace(year=start_date.year, month=start_date.month, day=start_date.day))
         time_since_last_trigger = None
         triggered = False
@@ -54,7 +56,7 @@ def create_calender_page():
             if 0 < ((local_time - scheduled_time).total_seconds())/60 < 30:
                 local_last_triggered_time = local_time
                 triggered = True
-                # print(f"Triggered {data['Name']['title'][0]['text']['content']} - {scheduled_time}")
+                print(f"Triggered {data['Name']['title'][0]['text']['content']} - {scheduled_time}")
         elif repeat_type == 'weekly':
             days_of_week = [x['name'] for x in data['Days Of Week']['multi_select']]
             if time_since_last_trigger and time_since_last_trigger.days < 7 * repeat_number:
@@ -62,21 +64,21 @@ def create_calender_page():
             if local_time.strftime("%A") in days_of_week and 0 < ((local_time - scheduled_time).total_seconds())/60 <30:
                 local_last_triggered_time = local_time
                 triggered = True
-                # print(f"Triggered {data['Name']['title'][0]['text']['content']} - {scheduled_time}")
+                print(f"Triggered {data['Name']['title'][0]['text']['content']} - {scheduled_time}")
         elif repeat_type == 'monthly':
             if time_since_last_trigger and time_since_last_trigger.days < 30 * repeat_number:
                 continue
             if local_time.day == scheduled_time.day and 0 < ((local_time - scheduled_time).total_seconds())/60 <30:
                 local_last_triggered_time = local_time
                 triggered = True
-                # print(f"Triggered {data['Name']['title'][0]['text']['content']} - {scheduled_time}")
+                print(f"Triggered {data['Name']['title'][0]['text']['content']} - {scheduled_time}")
         elif repeat_type == 'yearly':
             if time_since_last_trigger and time_since_last_trigger.days < 365 * repeat_number:
                 continue
             if local_time.day == scheduled_time.day and local_time.month == scheduled_time.month and 0 < ((local_time - scheduled_time).total_seconds())/60 <30:
                 local_last_triggered_time = local_time
                 triggered = True
-                # print(f"Triggered {data['Name']['title'][0]['text']['content']} - {scheduled_time}"
+                print(f"Triggered {data['Name']['title'][0]['text']['content']} - {scheduled_time}")
         if triggered:
             response = requests.post(notion_page_url,headers=headers,data=json.dumps(body))
             if response.status_code!=200:
@@ -100,7 +102,7 @@ def get_scheduler_details():
         "Notion-Version":"2022-02-22",
         "Content-Type":"application/json"
     }
-    filter = {"property":"Start Date","date":{"on_or_after":current_time_gmt.strftime("%Y-%m-%d")}}
+    filter = {"property":"Start Date","date":{"on_or_before":current_time_gmt.strftime("%Y-%m-%d")}}
     notion_task_url = os.path.join(notion_url,'databases',os.environ.get('SCHEDULER_DB_ID'),"query")
     result = requests.post(notion_task_url,headers=headers,data=json.dumps({'filter':filter})).json()
     return result

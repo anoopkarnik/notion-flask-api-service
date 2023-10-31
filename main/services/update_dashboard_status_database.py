@@ -77,7 +77,7 @@ def get_scheduled_planner_details():
     filter['and'].append({"property":"Tags","multi_select":{"contains":"Task"}})
     filter['and'].append({"property":"Completed","checkbox":{"equals":False}})
     filter['and'].append({"property":"Not Completed","checkbox":{"equals":False}})
-    notion_task_url = os.path.join(notion_url,'databases',os.environ.get('SCHEDULED_PLANNER_DB_ID'),"query")
+    notion_task_url = os.path.join(notion_url,'databases',os.environ.get('CALENDAR_DB_ID'),"query")
     result['task_no'] = len(requests.post(notion_task_url,headers=headers,data=json.dumps({'filter':filter})).json().get('results',[]))
     filter['and'][0]['multi_select']['contains'] = "Habit"
     result['habit_no'] = len(requests.post(notion_task_url,headers=headers,data=json.dumps({'filter':filter})).json().get('results',[]))

@@ -2,6 +2,7 @@ from flask import Blueprint, request, jsonify
 from ..services.update_book_database import update_books
 from ..services.update_movie_tvshow_database import update_movies_tvshows
 from ..services.update_dashboard_status_database import create_dashboard_status_updates_page
+from ..services.add_to_calendar import create_calendar_page
 
 payload_controller = Blueprint("payload_controller",__name__)
 
@@ -24,3 +25,8 @@ def update_movies_tvshows_controller():
 def update_dashboard_status_controller():
 	create_dashboard_status_updates_page()
 	return jsonify({'message':'Updated Dashboard Status Updates'})
+
+@payload_controller.route("/add_to_calendar",methods=["POST"])
+def create_calendar_controller():
+	create_calendar_page()
+	return jsonify({'message':'Created Calendar Pages Based on Schedule'})
