@@ -115,8 +115,8 @@ jobs:
         run: |
           if ssh -o StrictHostKeyChecking=no -i ~/.ssh/ssh_key.pem ubuntu@$EC2_IPv4_DNS 'sudo docker ps --format '{{.Names}}'' | grep -q "^${{ vars.ECR_REPOSITORY}}"; then
             echo "Container ${{ vars.ECR_REPOSITORY}} is already running. Stopping and removing.." &&
-            ssh -o StrictHostKeyChecking=no -i ~/.ssh/ssh_key.pem ubuntu@$EC2_IPv4_DNS 'sudo docker rm --force ${{ vars.ECR_REPOSITORY}} && (aws ecr get-login-password --region ap-south-1 | sudo docker login --username AWS --password-stdin ${{ steps.login-ecr.outputs.registry }}) && sudo docker run -d -p 8110:8110 --name ${{ vars.ECR_REPOSITORY }} ${{ steps.login-ecr.outputs.registry }}/${{ vars.ECR_REPOSITORY }}:latest'
+            ssh -o StrictHostKeyChecking=no -i ~/.ssh/ssh_key.pem ubuntu@$EC2_IPv4_DNS 'sudo docker rm --force ${{ vars.ECR_REPOSITORY}} && (aws ecr get-login-password --region ap-south-1 | sudo docker login --username AWS --password-stdin ${{ steps.login-ecr.outputs.registry }}) && sudo docker run -d -p 8110:8110 --name ${{ vars.ECR_REPOSITORY }} -v /home/ubuntu/logs/:/app/logs ${{ steps.login-ecr.outputs.registry }}/${{ vars.ECR_REPOSITORY }}:latest'
           else
             echo "Container $ {{ vars.ECR_REPOSITORY}} is not running" &&
-            ssh -o StrictHostKeyChecking=no -i ~/.ssh/ssh_key.pem ubuntu@$EC2_IPv4_DNS '(aws ecr get-login-password --region ap-south-1 | sudo docker login --username AWS --password-stdin ${{ steps.login-ecr.outputs.registry }}) && sudo docker run -d -p 8110:8110 --name ${{ vars.ECR_REPOSITORY }} ${{ steps.login-ecr.outputs.registry }}/${{ vars.ECR_REPOSITORY }}:latest'
+            ssh -o StrictHostKeyChecking=no -i ~/.ssh/ssh_key.pem ubuntu@$EC2_IPv4_DNS '(aws ecr get-login-password --region ap-south-1 | sudo docker login --username AWS --password-stdin ${{ steps.login-ecr.outputs.registry }}) && sudo docker run -d -p 8110:8110 --name ${{ vars.ECR_REPOSITORY }} -v /home/ubuntu/logs/:/app/logs ${{ steps.login-ecr.outputs.registry }}/${{ vars.ECR_REPOSITORY }}:latest'
           fi

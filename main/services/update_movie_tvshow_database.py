@@ -4,47 +4,29 @@ import json
 import datetime
 import pytz
 import time  # This library helps with time zone handling
+from ..services.notion_base_api import query_database,create_page,modify_page
+import logging
+
+logger = logging.getLogger(__name__)
 
 def update_movies_tvshows():
     gmt_timezone = pytz.timezone('GMT')
     current_time_gmt = datetime.datetime.now(gmt_timezone)
     ten_minutes_ago_gmt = current_time_gmt - datetime.timedelta(minutes=10)
-    notion_url = os.environ.get('NOTION_URL')
-    notion_database_url = os.path.join(notion_url,'databases')
-    movie_tvshow_database_id = os.environ.get('MOVIE_TVSHOW_DB_ID')
-    notion_movie_tvshow_database_url = os.path.join(notion_database_url,movie_tvshow_database_id,"query")
+    database_id = os.environ.get('MOVIE_TVSHOW_DB_ID')
     token = os.environ.get('NOTION_TOKEN')
-    # data = json.dumps({
-    #     "filter": {
-    #         "property": "temp",
-    #         "rich_text": {
-    #             "is_empty": True
-    #         }
-    #     }
-    # })
-    data = json.dumps({
-        "filter": {
-            "timestamp": "last_edited_time",
-            "last_edited_time": {
-                "on_or_after": ten_minutes_ago_gmt.strftime("%Y-%m-%dT%H:%M:%SZ")
-            }
-        }
-    })
-    headers = {
-        "Authorization": f"Bearer {token}",
-        "Notion-Version":"2022-02-22",
-        "Content-Type":"application/json"
-    }
-    response = requests.post(notion_movie_tvshow_database_url,headers=headers,data=data).json()
-    for result in response['results']:
+    filters = []
+    filters.append({'type':'last_edited_time','condition':'on_or_after','value':ten_minutes_ago_gmt.strftime("%Y-%m-%dT%H:%M:%SZ")})
+    results = query_database(database_id,filters).get('results',[])
+    for result in results:
         id = result['id']
-        title = result['properties']['Name']['title'][0]['plain_text']
-        type = result['properties']['Type']['select']['name']
+        title = result['Name']
+        type = result['Type']
         movie_tvshow_details = get_tmdb_movies_tvshows_details(title,type)
         if movie_tvshow_details:
-            print(f"Started Updating properties for {title}")
+            logger.info(f"Started Updating properties for {title}")
             update_movie_tvshow_properties(id,type,movie_tvshow_details)
-            print(f"Completed Updating properties for {title}")
+            logger.info(f"Completed Updating properties for {title}")
 
 
 def get_tmdb_movies_tvshows_details(title,type):
@@ -77,34 +59,22 @@ def get_tmdb_movies_tvshows_details(title,type):
 
 def update_movie_tvshow_properties(id,type,movie_tvshow_details):
     tmdb_image_url = os.environ.get('TMDB_IMAGE_URL')
-    notion_url = os.environ.get('NOTION_URL')
-    notion_page_url = os.path.join(notion_url,'pages')
-    notion_page_id_url = os.path.join(notion_page_url,id)
-    token = os.environ.get('NOTION_TOKEN')
-    headers = {
-        "Authorization": f"Bearer {token}",
-        "Notion-Version":"2022-02-22",
-        "Content-Type":"application/json"
-    }
-    properties = {}
-    properties['overview'] = {"rich_text":[{"text":{"content":movie_tvshow_details.get('overview','')}}]}
-    properties['rating_average'] = {"number":movie_tvshow_details.get('vote_average','')}
+    properties = []
+    properties.append({'name':'overview','type':'text','value':movie_tvshow_details.get('overview','')})
+    properties.append({'name':'rating_average','type':'number','value':movie_tvshow_details.get('vote_average','')})
     if movie_tvshow_details['poster_path']:
-        properties['poster'] = {"files":[{"name":"poster","external":{"url":tmdb_image_url+movie_tvshow_details.get('poster_path')}}]}
+        properties.append({'name':'poster','type':'file_url','value':tmdb_image_url+movie_tvshow_details.get('poster_path')})
     if 'genres' in movie_tvshow_details:
-        properties['Genre'] = {}
-        properties['Genre']['multi_select'] = []
-        for genre in movie_tvshow_details['genres']:
-            properties['Genre']['multi_select'].append({'name':genre['name']})
+        properties.append({'name':'Genre','type':'multi_select','value':[x['name'] for x in movie_tvshow_details['genres']]})
     if type == 'Film':
-        properties['release_date'] = {"date":{"start":movie_tvshow_details.get('release_date','')}}
+        properties.append({'name':'release_date','type':'date','value':movie_tvshow_details.get('release_date','')})
     else:
-        properties['release_date'] = {"date":{"start":movie_tvshow_details.get('first_air_date','')}}
-        properties['Total Episodes'] = {"number": movie_tvshow_details.get('number_of_episodes','')}
-        properties['Total Seasons'] = {"number": movie_tvshow_details.get('number_of_seasons','')}
-        properties['status'] = {'select':{'name':movie_tvshow_details.get('status','')}}
+        properties.append({'name':'release_date','type':'date','value':movie_tvshow_details.get('first_air_date','')})
+        properties.append({'name':'Total Episodes','type':'number','value':movie_tvshow_details.get('number_of_episodes','')})
+        properties.append({'name':'Total Seasons','type':'number','value':movie_tvshow_details.get('number_of_seasons','')})
+        properties.append({'name':'status','type':'select','value':movie_tvshow_details.get('status','')})
         if movie_tvshow_details['next_episode_to_air'] != None:
-            properties['Next Episode Date'] = {"date":{"start": movie_tvshow_details['next_episode_to_air'].get('air_date','')}}
+            properties.append({'name':'Next Episode Date','type':'date','value': movie_tvshow_details['next_episode_to_air'].get('air_date','')})
         seasons = movie_tvshow_details['seasons']
         season_episodes = ""
         season_details = ""
@@ -117,10 +87,7 @@ def update_movie_tvshow_properties(id,type,movie_tvshow_details):
             season_details += " - "
             season_details += season.get('overview')
             season_details += " | "
-        properties['Season Episodes'] = {"rich_text":[{"text":{"content":season_episodes}}]}
-        properties['Season Details'] = {"rich_text":[{"text":{"content":season_details[:2000]}}]}
-   
-    body = json.dumps({'properties':properties})
-    response = requests.request('PATCH',notion_page_id_url,headers=headers,data=body)
-    if response.status_code != 200:
-        print(response.json())
+        properties.append({'name':'Season Episodes','type':'text','value':season_episodes})
+        properties.append({'name':'Season Details','type':'text','value':season_details[:2000]})
+    response = modify_page(id,properties)
+    logger.info(response)

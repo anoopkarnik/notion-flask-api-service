@@ -3,42 +3,25 @@ import json
 import datetime
 import pytz
 import requests
+from ..services.notion_base_api import query_database,create_page,modify_page
+import logging
+
+logger = logging.getLogger(__name__)
 
 def get_financial_transaction_details():
-    notion_url = os.environ.get('NOTION_URL')
-    token = os.environ.get('NOTION_TOKEN')
-    headers = {
-        "Authorization": f"Bearer {token}",
-        "Notion-Version":"2022-02-22",
-        "Content-Type":"application/json"
-    }
     local_time = datetime.datetime.now()
-    filter = {"and":[]}
-    filter['and'].append({"property":"Monthly Budget","relation":{"is_not_empty":True}})
-    filter['and'].append({"timestamp":"created_time","created_time":{"before":f"{local_time.year}-{local_time.month}-01"}})
+    filters = []
+    filters.append({'name':'Monthly Budget','type':'relation','condition':'is_not_empty','value':True})
+    filters.append({'type':'created_time','condition':'before','value':f"{local_time.year}-{local_time.month}-01"})
     notion_financial_url = os.path.join(notion_url,'databases',os.environ.get('FINANCIAL_TRANSACTION_DB_ID'),"query")
-    results = requests.post(notion_financial_url,headers=headers,data=json.dumps({'filter':filter})).json().get('results',[])
+    results = query_database(os.environ.get('FINANCIAL_TRANSACTION_DB_ID'),filters).get('results',[])
     for result in results:
         update_transaction_details(result)
 
 
 def update_transaction_details(result):
-    notion_url = os.environ.get('NOTION_URL')
-    notion_page_id_url = os.path.join(notion_page_url,'pages',id)
-    token = os.environ.get('NOTION_TOKEN')
-    headers = {
-        "Authorization": f"Bearer {token}",
-        "Notion-Version":"2022-02-22",
-        "Content-Type":"application/json"
-    }
-    properties = {}
-    relation_ids = [relation['id'] for relation in result['properties']['Monthly Budget']['relation']]
-    properties['Old Monthly Budget'] = {}
-    properties['Old Monthly Budget']['relation'] =[]
-    for relation_id in relation_ids:
-        properties['Old Monthly Budget']['relation'].append({'id':relation_id})
-    properties['Monthly Budget'] ={}
-    properties['Monthly Budget']['relation'] = []
-    body = json.dumps({'properties':properties})
-    response = requests.request('PATCH',notion_page_id_url,headers=headers,data=body)
-    return result
+    properties = []
+    properties.append({'name':'Old Monthly Budget','type':'relation','value':[x['id'] for x in result['Monthly Budget']]})
+    properties.append({'name':'Monthly Budget','type':'relation','value':[]})
+    response = modify_page(result['id'],properties)
+    return response
