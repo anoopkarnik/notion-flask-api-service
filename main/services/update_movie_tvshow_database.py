@@ -66,9 +66,12 @@ def update_movie_tvshow_properties(id,type,movie_tvshow_details):
         properties.append({'name':'poster','type':'file_url','value':tmdb_image_url+movie_tvshow_details.get('poster_path')})
     if 'genres' in movie_tvshow_details:
         properties.append({'name':'Genre','type':'multi_select','value':[x['name'] for x in movie_tvshow_details['genres']]})
+    properties.append({'name':'Original Language','type':'select','value':movie_tvshow_details.get('original_language','')})
+    properties.append({'name':'Available Languages','type':'multi_select','value':movie_tvshow_details.get('languages',[])})
     if type == 'Film':
         properties.append({'name':'release_date','type':'date','value':movie_tvshow_details.get('release_date','')})
     else:
+
         properties.append({'name':'release_date','type':'date','value':movie_tvshow_details.get('first_air_date','')})
         properties.append({'name':'Total Episodes','type':'number','value':movie_tvshow_details.get('number_of_episodes','')})
         properties.append({'name':'Total Seasons','type':'number','value':movie_tvshow_details.get('number_of_seasons','')})

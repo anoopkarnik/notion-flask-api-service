@@ -13,7 +13,6 @@ def get_financial_transaction_details():
     filters = []
     filters.append({'name':'Monthly Budget','type':'relation','condition':'is_not_empty','value':True})
     filters.append({'type':'created_time','condition':'before','value':f"{local_time.year}-{local_time.month}-01"})
-    notion_financial_url = os.path.join(notion_url,'databases',os.environ.get('FINANCIAL_TRANSACTION_DB_ID'),"query")
     results = query_database(os.environ.get('FINANCIAL_TRANSACTION_DB_ID'),filters).get('results',[])
     for result in results:
         update_transaction_details(result)
