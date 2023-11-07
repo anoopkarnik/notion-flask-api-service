@@ -16,6 +16,7 @@ def update_movies_tvshows():
     database_id = os.environ.get('MOVIE_TVSHOW_DB_ID')
     token = os.environ.get('NOTION_TOKEN')
     filters = []
+    # filters.append({'name':'Original Language','type':'select','condition':'is_empty','value':True})
     filters.append({'type':'last_edited_time','condition':'on_or_after','value':ten_minutes_ago_gmt.strftime("%Y-%m-%dT%H:%M:%SZ")})
     results = query_database(database_id,filters).get('results',[])
     for result in results:
@@ -71,7 +72,6 @@ def update_movie_tvshow_properties(id,type,movie_tvshow_details):
     if type == 'Film':
         properties.append({'name':'release_date','type':'date','value':movie_tvshow_details.get('release_date','')})
     else:
-
         properties.append({'name':'release_date','type':'date','value':movie_tvshow_details.get('first_air_date','')})
         properties.append({'name':'Total Episodes','type':'number','value':movie_tvshow_details.get('number_of_episodes','')})
         properties.append({'name':'Total Seasons','type':'number','value':movie_tvshow_details.get('number_of_seasons','')})

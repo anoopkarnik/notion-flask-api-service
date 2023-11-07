@@ -107,6 +107,8 @@ def modify_filter(filter):
         return {'property':filter['name'],'checkbox':{filter['condition']:filter['value']}}
     elif filter['type'] == 'multi_select':
         return {'property':filter['name'],'multi_select':{filter['condition']:filter['value']}}
+    elif filter['type'] == 'select':
+        return {'property':filter['name'],'select':{filter['condition']:filter['value']}}
     elif filter['type'] == 'created_time':
         return {'timestamp':'created_time','created_time':{filter['condition']:filter['value']}}
     elif filter['type'] == 'relation':
@@ -155,7 +157,7 @@ def modify_property(property):
     elif property['type'] == 'title':
         return {'title':[{'text':{'content':property['value']}}]}
     elif property['type'] == 'date':
-        return {'date':{'start':property['value']}}
+        return {'date':{'start':property['value'] if property['value'] else '1900-01-01'}}
     elif property['type'] == 'number':
         return {'number':property['value']}
     elif property['type'] == 'file_url':
