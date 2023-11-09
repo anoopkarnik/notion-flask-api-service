@@ -15,11 +15,6 @@ def create_app():
 	app = Flask(__name__)
 	logging.basicConfig(filename='logs/scheduler.log', level=logging.INFO, 
                     format='%(asctime)s:%(levelname)s:%(message)s')
-	# app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://'+os.environ.get('DB_USERNAME')+':'+ os.environ.get('DB_PASSWORD')+'@'+ os.environ.get('DB_HOST')+':'+ os.environ.get('DB_PORT')+'/'+ os.environ.get('DB_NAME')
-	# app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-	# db.init_app(app)
-	# with app.app_context():
-	# 	db.create_all()
 	app.logger.info('Info level log')
 	app.logger.error('Error level log')
 	scheduler = BackgroundScheduler()
