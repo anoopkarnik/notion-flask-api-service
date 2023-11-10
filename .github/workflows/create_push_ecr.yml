@@ -2,8 +2,7 @@ on:
   push:
     branches: [ main ]
   workflow_dispatch:
-    branches: [ main ]
-
+    
 name: Create and Push to ECR
 
 jobs:
@@ -107,16 +106,16 @@ jobs:
           ssh -o StrictHostKeyChecking=no -i ~/.ssh/ssh_key.pem ubuntu@$EC2_IPv4_DNS '(aws ecr get-login-password --region ap-south-1 | sudo docker login --username AWS --password-stdin ${{ steps.login-ecr.outputs.registry }}) && sudo docker pull ${{ steps.login-ecr.outputs.registry }}/${{ vars.ECR_REPOSITORY }}:latest'
 
 
-      - name: run Docker image on EC2
-        env:
-          S3_BUCKET_NAME: ${{ vars.S3_BUCKET_NAME }}
-          S3_KEY_FILE_NAME: ${{ vars.S3_KEY_FILE_NAME }}
-          EC2_IPv4_DNS: ${{ vars.IPv4_DNS }}
-        run: |
-          if ssh -o StrictHostKeyChecking=no -i ~/.ssh/ssh_key.pem ubuntu@$EC2_IPv4_DNS 'sudo docker ps --format '{{.Names}}'' | grep -q "^${{ vars.ECR_REPOSITORY}}"; then
-            echo "Container ${{ vars.ECR_REPOSITORY}} is already running. Stopping and removing.." &&
-            ssh -o StrictHostKeyChecking=no -i ~/.ssh/ssh_key.pem ubuntu@$EC2_IPv4_DNS 'sudo docker rm --force ${{ vars.ECR_REPOSITORY}} && (aws ecr get-login-password --region ap-south-1 | sudo docker login --username AWS --password-stdin ${{ steps.login-ecr.outputs.registry }}) && sudo docker run -d -p 8110:8110 --name ${{ vars.ECR_REPOSITORY }} --env-file /home/ubuntu/.env -v /home/ubuntu/logs/:/app/logs ${{ steps.login-ecr.outputs.registry }}/${{ vars.ECR_REPOSITORY }}:latest'
-          else
-            echo "Container $ {{ vars.ECR_REPOSITORY}} is not running" &&
-            ssh -o StrictHostKeyChecking=no -i ~/.ssh/ssh_key.pem ubuntu@$EC2_IPv4_DNS '(aws ecr get-login-password --region ap-south-1 | sudo docker login --username AWS --password-stdin ${{ steps.login-ecr.outputs.registry }}) && sudo docker run --network apps-network -d -p 8110:8110 --name ${{ vars.ECR_REPOSITORY }} --env-file /home/ubuntu/.env -v /home/ubuntu/logs/:/app/logs ${{ steps.login-ecr.outputs.registry }}/${{ vars.ECR_REPOSITORY }}:latest'
-          fi
+      # - name: run Docker image on EC2
+      #   env:
+      #     S3_BUCKET_NAME: ${{ vars.S3_BUCKET_NAME }}
+      #     S3_KEY_FILE_NAME: ${{ vars.S3_KEY_FILE_NAME }}
+      #     EC2_IPv4_DNS: ${{ vars.IPv4_DNS }}
+      #   run: |
+      #     if ssh -o StrictHostKeyChecking=no -i ~/.ssh/ssh_key.pem ubuntu@$EC2_IPv4_DNS 'sudo docker ps --format '{{.Names}}'' | grep -q "^${{ vars.ECR_REPOSITORY}}"; then
+      #       echo "Container ${{ vars.ECR_REPOSITORY}} is already running. Stopping and removing.." &&
+      #       ssh -o StrictHostKeyChecking=no -i ~/.ssh/ssh_key.pem ubuntu@$EC2_IPv4_DNS 'sudo docker rm --force ${{ vars.ECR_REPOSITORY}} && (aws ecr get-login-password --region ap-south-1 | sudo docker login --username AWS --password-stdin ${{ steps.login-ecr.outputs.registry }}) && sudo docker run -d -p 8110:8110 --name ${{ vars.ECR_REPOSITORY }} --env-file /home/ubuntu/.env -v /home/ubuntu/logs/:/app/logs ${{ steps.login-ecr.outputs.registry }}/${{ vars.ECR_REPOSITORY }}:latest'
+      #     else
+      #       echo "Container $ {{ vars.ECR_REPOSITORY}} is not running" &&
+      #       ssh -o StrictHostKeyChecking=no -i ~/.ssh/ssh_key.pem ubuntu@$EC2_IPv4_DNS '(aws ecr get-login-password --region ap-south-1 | sudo docker login --username AWS --password-stdin ${{ steps.login-ecr.outputs.registry }}) && sudo docker run --network apps-network -d -p 8110:8110 --name ${{ vars.ECR_REPOSITORY }} --env-file /home/ubuntu/.env -v /home/ubuntu/logs/:/app/logs ${{ steps.login-ecr.outputs.registry }}/${{ vars.ECR_REPOSITORY }}:latest'
+      #     fi

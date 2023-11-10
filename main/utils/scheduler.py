@@ -13,7 +13,7 @@ def schedule_jobs(scheduler):
     job = scheduler.add_job(
         func=create_dashboard_status_updates_page,
         trigger='interval',
-        minutes=30,
+        minutes=60,
         id='create new dashboard status',
         name='create new dashboard status',
         replace_existing=True)
@@ -23,7 +23,7 @@ def schedule_jobs(scheduler):
     job = scheduler.add_job(
         func=update_movies_tvshows,
         trigger='interval',
-        minutes=30,
+        minutes=1,
         id='update_movie_tvshow_job',
         name='Update movie and TV show database every 30 minutes',
         replace_existing=True)
@@ -41,7 +41,7 @@ def schedule_jobs(scheduler):
     job = scheduler.add_job(
         func=update_books,
         trigger='interval',
-        minutes=30,
+        minutes=1,
         id='update_books_job',
         name='Update books every 30 minutes',
         replace_existing=True)
