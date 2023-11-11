@@ -89,3 +89,4 @@ def get_scheduler_details():
     results = query_database(os.environ.get('SCHEDULER_DB_ID'),filters).get('results',[])
     logger.info("Queried Database")
     return results
+
