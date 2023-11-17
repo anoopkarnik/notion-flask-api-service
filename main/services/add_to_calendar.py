@@ -12,7 +12,9 @@ logger = logging.getLogger(__name__)
 
 def create_calendar_page():
     database_id = os.environ.get('CALENDAR_DB_ID')
-    scheduler_details = get_scheduler_details()
+    location = get_current_location()
+    print(f"My current location is {location}")
+    scheduler_details = get_scheduler_details(location)
     for row in scheduler_details:
         page_id = row['id']
         properties = []
@@ -80,13 +82,31 @@ def create_calendar_page():
             logger.info(response)
 
 
-def get_scheduler_details():
+def get_scheduler_details(location):
     gmt_timezone = pytz.timezone('Asia/Kolkata')
     current_time_gmt = datetime.datetime.now(gmt_timezone)
     filters = []
     filters.append({"name":"Start Date",'type':"date",'condition':"on_or_before",'value':current_time_gmt.strftime("%Y-%m-%d")})
+    filters.append({'name':'Location','type':'multi_select','condition':'contains','value':location})
     logger.info("Querying Database")
     results = query_database(os.environ.get('SCHEDULER_DB_ID'),filters).get('results',[])
     logger.info("Queried Database")
     return results
 
+def get_current_location():
+    filters = []
+    filters.append({"name":"End Time",'type':'date','condition':'is_empty','value':True})
+    logger.info("Querying Database")
+    results = query_database(os.environ.get('TIMEBOX_DB_ID'),filters).get('results',[])
+    logger.info("Queried Database")
+    if len(results) == 0:
+        return 'Home'
+    else:
+        for row in results:
+            if row['Action Name'] == 'Parents':
+                return row['Action Name']
+            elif row['Action Name'] == 'Short Vacation':
+                return row['Action Name']
+            elif row['Action Name'] == 'Long Vacation':
+                return row['Action Name']
+    return 'Home'

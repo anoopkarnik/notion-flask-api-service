@@ -150,6 +150,8 @@ def unmodify_property(prop):
         return prop['created_time']
     elif prop['type'] == 'multi_select':
         return [x['name'] for x in prop['multi_select']]
+    elif prop['type'] == 'array':
+        return unmodify_property(prop['array'][0]) if len(prop['array']) > 0 else ''
 
 def modify_property(property):
     if property['type'] == 'text':
