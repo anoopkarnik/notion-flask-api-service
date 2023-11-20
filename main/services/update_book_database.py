@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 def update_books():
     gmt_timezone = pytz.timezone('GMT')
     current_time_gmt = datetime.datetime.now(gmt_timezone)
-    ten_minutes_ago_gmt = current_time_gmt - datetime.timedelta(minutes=10)
+    ten_minutes_ago_gmt = current_time_gmt - datetime.timedelta(minutes=5)
     book_database_id = os.environ.get('BOOKS_DB_ID')
     filters = []
     filters.append({'type':'last_edited_time','condition':'on_or_after','value':ten_minutes_ago_gmt.strftime("%Y-%m-%dT%H:%M:%SZ")})

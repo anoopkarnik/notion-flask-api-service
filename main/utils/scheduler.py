@@ -25,7 +25,7 @@ def schedule_jobs(scheduler):
         trigger='interval',
         minutes=5,
         id='update_movie_tvshow_job',
-        name='Update movie and TV show database every 30 minutes',
+        name='Update movie and TV show database every 5 minutes',
         replace_existing=True)
     logging.info(f"Scheduled job: {job.name}")
     
@@ -41,9 +41,9 @@ def schedule_jobs(scheduler):
     job = scheduler.add_job(
         func=update_books,
         trigger='interval',
-        minutes=1,
+        minutes=5,
         id='update_books_job',
-        name='Update books every 30 minutes',
+        name='Update books every 5 minutes',
         replace_existing=True)
     logging.info(f"Scheduled job: {job.name}")
 
