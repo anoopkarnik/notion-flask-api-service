@@ -43,7 +43,7 @@ def create_calendar_page():
         elif repeat_type == 'daily':
             if time_since_last_trigger and time_since_last_trigger.days < repeat_number:
                 continue
-            if 0 < ((local_time - scheduled_time).total_seconds())/60 < 30:
+            if 0 < ((local_time - scheduled_time).total_seconds())/60 < 35:
                 local_last_triggered_time = local_time
                 triggered = True
                 logger.info(f"Triggered {row['Name']} - {scheduled_time}")
@@ -51,21 +51,21 @@ def create_calendar_page():
             days_of_week = row['Days Of Week']
             if time_since_last_trigger and time_since_last_trigger.days < 7 * repeat_number:
                 continue
-            if local_time.strftime("%A") in days_of_week and 0 < ((local_time - scheduled_time).total_seconds())/60 <30:
+            if local_time.strftime("%A") in days_of_week and 0 < ((local_time - scheduled_time).total_seconds())/60 <35:
                 local_last_triggered_time = local_time
                 triggered = True
                 logger.info(f"Triggered {row['Name']} - {scheduled_time}")
         elif repeat_type == 'monthly':
             if time_since_last_trigger and time_since_last_trigger.days < 30 * repeat_number:
                 continue
-            if local_time.day == scheduled_time.day and 0 < ((local_time - scheduled_time).total_seconds())/60 <30:
+            if local_time.day == scheduled_time.day and 0 < ((local_time - scheduled_time).total_seconds())/60 <35:
                 local_last_triggered_time = local_time
                 triggered = True
                 logger.info(f"Triggered {row['Name']} - {scheduled_time}")
         elif repeat_type == 'yearly':
             if time_since_last_trigger and time_since_last_trigger.days < 365 * repeat_number:
                 continue
-            if local_time.day == scheduled_time.day and local_time.month == scheduled_time.month and 0 < ((local_time - scheduled_time).total_seconds())/60 <30:
+            if local_time.day == scheduled_time.day and local_time.month == scheduled_time.month and 0 < ((local_time - scheduled_time).total_seconds())/60 <35:
                 local_last_triggered_time = local_time
                 triggered = True
                 logger.info(f"Triggered {row['Name']} - {scheduled_time}")
