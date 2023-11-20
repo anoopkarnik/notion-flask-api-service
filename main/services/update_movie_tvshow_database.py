@@ -12,12 +12,12 @@ logger = logging.getLogger(__name__)
 def update_movies_tvshows():
     gmt_timezone = pytz.timezone('GMT')
     current_time_gmt = datetime.datetime.now(gmt_timezone)
-    ten_minutes_ago_gmt = current_time_gmt - datetime.timedelta(minutes=5)
+    ten_minutes_ago_gmt = current_time_gmt - datetime.timedelta(minutes=2)
     database_id = os.environ.get('MOVIE_TVSHOW_DB_ID')
     token = os.environ.get('NOTION_TOKEN')
     filters = []
     # filters.append({'name':'Original Language','type':'select','condition':'is_empty','value':True})
-    filters.append({'type':'last_edited_time','condition':'on_or_after','value':ten_minutes_ago_gmt.strftime("%Y-%m-%dT%H:%M:%SZ")})
+    filters.append({'type':'created_time','condition':'on_or_after','value':ten_minutes_ago_gmt.strftime("%Y-%m-%dT%H:%M:%SZ")})
     results = query_database(database_id,filters).get('results',[])
     for result in results:
         id = result['id']
