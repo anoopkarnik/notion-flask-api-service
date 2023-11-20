@@ -12,8 +12,8 @@ def schedule_jobs(scheduler):
     # Schedule update_dashboard_status() to run daily at a specific time
     job = scheduler.add_job(
         func=create_dashboard_status_updates_page,
-        trigger='interval',
-        minutes=60,
+        trigger='cron',
+        minute=0,
         id='create_new_dashboard_status',
         name='create new dashboard status every hour',
         replace_existing=True)
@@ -22,8 +22,8 @@ def schedule_jobs(scheduler):
     # Schedule update_movie_tvshow() to run every 30 minutes
     job = scheduler.add_job(
         func=update_movies_tvshows,
-        trigger='interval',
-        minutes=1,
+        trigger='cron',
+        minute='*/5',
         id='update_movie_tvshow_job',
         name='Update movie and TV show database every 5 minutes',
         replace_existing=True)
@@ -31,8 +31,8 @@ def schedule_jobs(scheduler):
     
     job = scheduler.add_job(
         func=create_calendar_page,
-        trigger='interval',
-        minutes=30,
+        trigger='cron',
+        minute='0,30',
         id='create_calendar_page_job',
         name='Create Calendar page every 30 minutes from schedule',
         replace_existing=True)
@@ -40,8 +40,8 @@ def schedule_jobs(scheduler):
 
     job = scheduler.add_job(
         func=update_books,
-        trigger='interval',
-        minutes=5,
+        trigger='cron',
+        minute='*/5',
         id='update_books_job',
         name='Update books every 5 minutes',
         replace_existing=True)
@@ -49,8 +49,8 @@ def schedule_jobs(scheduler):
 
     job = scheduler.add_job(
         func=get_financial_transaction_details,
-        trigger='interval',
-        minutes=30,
+        trigger='cron',
+        minute='0,30',
         id='update_financial_transaction_details',
         name='Update financial transaction details',
         replace_existing=True)
