@@ -23,7 +23,7 @@ def schedule_jobs(scheduler):
     job = scheduler.add_job(
         func=update_movies_tvshows,
         trigger='interval',
-        minutes=1,
+        minutes=2,
         id='update_movie_tvshow_job',
         name='Update movie and TV show database every 5 minutes',
         replace_existing=True)
