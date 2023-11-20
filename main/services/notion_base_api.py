@@ -142,7 +142,7 @@ def unmodify_property(prop):
         return [x['name'] for x in prop['people']]
     elif prop['type'] == 'status':
         return prop['status']['name'] if prop['status'] else None
-    elif prop['type'] == 'date':
+    elif prop['type'] == 'date': 
         return prop['date']['start'] if prop['date'] else None
     elif prop['type'] == 'last_edited_time':
         return prop['last_edited_time']
