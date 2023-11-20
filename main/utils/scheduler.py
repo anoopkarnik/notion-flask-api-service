@@ -14,8 +14,8 @@ def schedule_jobs(scheduler):
         func=create_dashboard_status_updates_page,
         trigger='interval',
         minutes=60,
-        id='create new dashboard status',
-        name='create new dashboard status',
+        id='create_new_dashboard_status',
+        name='create new dashboard status every hour',
         replace_existing=True)
     logging.info(f"Scheduled job: {job.name}")
 
@@ -23,7 +23,7 @@ def schedule_jobs(scheduler):
     job = scheduler.add_job(
         func=update_movies_tvshows,
         trigger='interval',
-        minutes=2,
+        minutes=1,
         id='update_movie_tvshow_job',
         name='Update movie and TV show database every 5 minutes',
         replace_existing=True)
@@ -33,8 +33,8 @@ def schedule_jobs(scheduler):
         func=create_calendar_page,
         trigger='interval',
         minutes=30,
-        id='update_movie_tvshow_job',
-        name='Update movie and TV show database every 30 minutes',
+        id='create_calendar_page_job',
+        name='Create Calendar page every 30 minutes from schedule',
         replace_existing=True)
     logging.info(f"Scheduled job: {job.name}")
 
