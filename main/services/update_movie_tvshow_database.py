@@ -9,16 +9,47 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-def update_movies_tvshows():
+def get_time(type,number):
     gmt_timezone = pytz.timezone('GMT')
     current_time_gmt = datetime.datetime.now(gmt_timezone)
-    ten_minutes_ago_gmt = current_time_gmt - datetime.timedelta(minutes=10)
+    if type == 'daily':
+        past_time = current_time_gmt - datetime.timedelta(days=number)
+        return past_time.strftime("%Y-%m-%dT%H:%M:%SZ") 
+    elif type == 'weekly':
+        past_time = current_time_gmt - datetime.timedelta(weeks=number)
+        return past_time.strftime("%Y-%m-%dT%H:%M:%SZ") 
+    elif type == 'monthly':
+        past_time = current_time_gmt - datetime.timedelta(months=number)
+        return past_time.strftime("%Y-%m-%dT%H:%M:%SZ") 
+    elif type == 'minutes':
+        past_time = current_time_gmt - datetime.timedelta(minutes=number)
+        return past_time.strftime("%Y-%m-%dT%H:%M:%SZ") 
+    elif type == 'hours':
+        past_time = current_time_gmt - datetime.timedelta(hours=number)
+        return past_time.strftime("%Y-%m-%dT%H:%M:%SZ") 
+    else:
+        return None
+
+
+def update_new_movies_tvshows():
+    past_time_string = get_time('minutes',30)
     database_id = os.environ.get('MOVIE_TVSHOW_DB_ID')
-    token = os.environ.get('NOTION_TOKEN')
     filters = []
     # filters.append({'name':'Original Language','type':'select','condition':'is_empty','value':True})
-    filters.append({'type':'created_time','condition':'on_or_after','value':ten_minutes_ago_gmt.strftime("%Y-%m-%dT%H:%M:%SZ")})
+    filters.append({'type':'created_time','condition':'on_or_after','value':past_time_string})
     results = query_database(database_id,filters).get('results',[])
+    loop_through_results(results)
+
+def update_existing_tvshows():
+    database_id = os.environ.get('MOVIE_TVSHOW_DB_ID')
+    filters = []
+    # filters.append({'name':'Original Language','type':'select','condition':'is_empty','value':True})
+    filters.append({'name':'Type','type':'select','condition':'equals','value':'TV Series'})
+    filters.append({'name':'status','type':'select','condition':'equals','value':'Returning Series'})
+    results = query_database(database_id,filters).get('results',[])
+    loop_through_results(results)
+
+def loop_through_results(results):
     for result in results:
         id = result['id']
         title = result['Name']
@@ -28,7 +59,6 @@ def update_movies_tvshows():
             logger.info(f"Started Updating properties for {title}")
             update_movie_tvshow_properties(id,type,movie_tvshow_details)
             logger.info(f"Completed Updating properties for {title}")
-
 
 def get_tmdb_movies_tvshows_details(title,type):
     tmdb_movie_query_url = os.environ.get('TMDB_MOVIE_QUERY_URL')

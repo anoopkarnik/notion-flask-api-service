@@ -25,7 +25,7 @@ def query_database(database_id,filters):
         body = construct_filter_body(filters,cursor)
         logger.info(body)
         response = requests.post(notion_database_id_url,headers=headers,data=body).json()
-        logger.info(response)
+        # logger.info(response)
         if len(response['results'])>0:
             has_more = response['has_more']
             cursor = response['next_cursor']
@@ -47,9 +47,9 @@ def modify_page(page_id,properties):
         "Content-Type":"application/json"
     }
     body = construct_update_body(properties)
-    logger.info(body)
+    # logger.info(body)
     response = requests.request('PATCH',notion_page_id_url,headers=headers,data=body).json()
-    logger.info(response)
+    # logger.info(response)
     result = modify_result(response)
     return result
 
@@ -64,7 +64,7 @@ def create_page(database_id,properties):
     }
     body = construct_create_body(database_id,properties)
     response = requests.post(notion_page_url,headers = headers, data= body).json()
-    logger.info(response)
+    # logger.info(response)
     result = modify_result(response)
     return result
 
@@ -75,12 +75,12 @@ def construct_create_body(database_id,properties):
     body['parent']['type'] = 'database_id'
     body['parent']['database_id'] = database_id
     properties_body = {}
-    logger.info("Creating body")
+    # logger.info("Creating body")
     # logger.info(properties)
     for property in properties:
         properties_body[property['name']] = modify_property(property)
     body['properties'] = properties_body
-    logger.info(body)
+    # logger.info(body)
     return json.dumps(body) 
 
 def construct_filter_body(filters,cursor):

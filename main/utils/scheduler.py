@@ -1,5 +1,5 @@
 from ..services.update_book_database import update_books
-from ..services.update_movie_tvshow_database import update_movies_tvshows
+from ..services.update_movie_tvshow_database import update_new_movies_tvshows,update_existing_tvshows
 from ..services.update_dashboard_status_database import create_dashboard_status_updates_page
 from ..services.add_to_calendar import create_calendar_page
 from ..services.notion_base_api import query_database,create_page,modify_page
@@ -19,13 +19,25 @@ def schedule_jobs(scheduler):
         replace_existing=True)
     logging.info(f"Scheduled job: {job.name}")
 
-    # Schedule update_movie_tvshow() to run every 30 minutes
+    # Schedule update_new_movie_tvshow() to run every 30 minutes
     job = scheduler.add_job(
-        func=update_movies_tvshows,
+        func=update_new_movies_tvshows,
         trigger='cron',
         minute='*/5',
-        id='update_movie_tvshow_job',
-        name='Update movie and TV show database every 5 minutes',
+        id='update_new_movie_tvshow_job',
+        name='Update new movie and TV show database every 5 minutes',
+        replace_existing=True)
+    logging.info(f"Scheduled job: {job.name}")
+
+        # Schedule update_movie_tvshow() to run every 30 minutes
+    job = scheduler.add_job(
+        func=update_existing_tvshows,
+        trigger='cron',
+        day_of_week='fri',
+        hour=17,
+        minute=0,
+        id='update_existing_tvshow_job',
+        name='Update existing TV show database every friday 5 pm',
         replace_existing=True)
     logging.info(f"Scheduled job: {job.name}")
     
@@ -43,7 +55,7 @@ def schedule_jobs(scheduler):
         trigger='cron',
         minute='*/5',
         id='update_books_job',
-        name='Update books every 5 minutes',
+        name='Update new books every 5 minutes',
         replace_existing=True)
     logging.info(f"Scheduled job: {job.name}")
 

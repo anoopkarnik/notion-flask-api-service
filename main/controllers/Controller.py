@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from ..services.update_book_database import update_books
-from ..services.update_movie_tvshow_database import update_movies_tvshows
+from ..services.update_movie_tvshow_database import update_new_movies_tvshows,update_existing_tvshows
 from ..services.update_dashboard_status_database import create_dashboard_status_updates_page
 from ..services.add_to_calendar import create_calendar_page
 from ..services.notion_base_api import query_database,create_page,modify_page
@@ -35,10 +35,16 @@ def update_books_controller():
 	update_books()
 	return jsonify({'message':'Books updated'})
 
-@payload_controller.route("/update_movies_tvshows",methods=["POST"])
-def update_movies_tvshows_controller():
-	update_movies_tvshows()
-	return jsonify({'message':'Movies and TV Shows updated'})
+@payload_controller.route("/update_new_movies_tvshows",methods=["POST"])
+def update_new_movies_tvshows_controller():
+	update_new_movies_tvshows()
+	return jsonify({'message':'Newly Created Movies and TV Shows updated'})
+
+
+@payload_controller.route("/update_existing_tvshows",methods=["POST"])
+def update_existing_tvshows_controller():
+	update_existing_tvshows()
+	return jsonify({'message':'Update Existing TV Shows updated'})
 
 
 @payload_controller.route("/update_dashboard_status",methods=["POST"])
