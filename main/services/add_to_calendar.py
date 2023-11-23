@@ -17,9 +17,11 @@ def create_calendar_page():
     scheduler_details = get_scheduler_details(location)
     for row in scheduler_details:
         page_id = row['id']
+        logger.info(f"page_id is {page_id}")
         properties = []
         properties.append({'name':'Name','type':'title','value':row.get('Name')})
         properties.append({'name':'Tags','type':'multi_select','value':[row.get('Type')]})
+        properties.append({'name':'Scheduler','type':'relation','value':page_id})
         repeat_type = row['Repeat Type']
         time = row['Time']
         time_zone = row['Time Zone']

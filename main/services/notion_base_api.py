@@ -64,7 +64,7 @@ def create_page(database_id,properties):
     }
     body = construct_create_body(database_id,properties)
     response = requests.post(notion_page_url,headers = headers, data= body).json()
-    # logger.info(response)
+    logger.info(response)
     result = modify_result(response)
     return result
 
@@ -170,4 +170,9 @@ def modify_property(property):
         result = {'multi_select':[]}
         for value in property['value']:
             result['multi_select'].append({'name':value})
+        return result
+    elif property['type'] == 'relation':
+        result = {'relation':[]}
+        for value in property['value']:
+            result['relation'].append({'id':value})
         return result
