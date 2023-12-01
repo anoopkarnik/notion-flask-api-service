@@ -21,7 +21,8 @@ def create_calendar_page():
         properties = []
         properties.append({'name':'Name','type':'title','value':row.get('Name')})
         properties.append({'name':'Tags','type':'multi_select','value':[row.get('Type')]})
-        properties.append({'name':'Scheduler','type':'relation','value':page_id})
+        properties.append({'name':'Scheduler','type':'relation','value':[page_id]})
+        print(properties)
         repeat_type = row['Repeat Type']
         time = row['Time']
         time_zone = row['Time Zone']

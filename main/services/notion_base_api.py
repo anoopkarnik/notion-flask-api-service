@@ -63,6 +63,7 @@ def create_page(database_id,properties):
         "Content-Type":"application/json"
     }
     body = construct_create_body(database_id,properties)
+    print(body)
     response = requests.post(notion_page_url,headers = headers, data= body).json()
     logger.info(response)
     result = modify_result(response)
