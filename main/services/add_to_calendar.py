@@ -22,7 +22,6 @@ def create_calendar_page():
         properties.append({'name':'Name','type':'title','value':row.get('Name')})
         properties.append({'name':'Tags','type':'multi_select','value':[row.get('Type')]})
         properties.append({'name':'Scheduler','type':'relation','value':[page_id]})
-        print(properties)
         repeat_type = row['Repeat Type']
         time = row['Time']
         time_zone = row['Time Zone']
@@ -32,7 +31,17 @@ def create_calendar_page():
         start_date = local_tz.localize(datetime.datetime.strptime(row['Start Date'],'%Y-%m-%d'))
         if start_date < local_time and (repeat_type == 'daily' or repeat_type == 'weekly') :
             start_date = local_time
-        scheduled_time = local_tz.localize(datetime.datetime.strptime(time, '%H%M').replace(year=start_date.year, month=start_date.month, day=start_date.day))
+            scheduled_time = local_tz.localize(datetime.datetime.strptime(time, '%H%M').replace(year=start_date.year, month=start_date.month, day=start_date.day))
+        elif start_date < local_time and repeat_type == 'monthly':
+            # print(start_date)
+            # print(local_tz.localize(datetime.datetime.strptime(time, '%H%M')))
+            scheduled_time = local_tz.localize(datetime.datetime.strptime(time, '%H%M').replace(year=local_time.year, month=local_time.month))
+            scheduled_time = scheduled_time.replace(day=start_date.day)
+            # print(scheduled_time)
+        elif start_date < local_time and repeat_type == 'yearly':
+            # start_date = local_time
+            scheduled_time = local_tz.localize(datetime.datetime.strptime(time, '%H%M').replace(year=local_time.year))
+            scheduled_time = scheduled_time.replace(day=start_date.day,month=start_date.month)
         time_since_last_trigger = None
         triggered = False
         if row['Last Triggered Date']:
@@ -59,9 +68,11 @@ def create_calendar_page():
                 triggered = True
                 logger.info(f"Triggered {row['Name']} - {scheduled_time}")
         elif repeat_type == 'monthly':
-            if time_since_last_trigger and time_since_last_trigger.days < 30 * repeat_number:
+            if time_since_last_trigger and time_since_last_trigger.days <= 28 * repeat_number:
                 continue
+            # print(f"{properties[0]['value']} - {time_since_last_trigger.days <= 28 * repeat_number} - {time_since_last_trigger.days } - {local_time} - {scheduled_time}")
             if local_time.day == scheduled_time.day and 0 < ((local_time - scheduled_time).total_seconds())/60 <35:
+                # print(properties)
                 local_last_triggered_time = local_time
                 triggered = True
                 logger.info(f"Triggered {row['Name']} - {scheduled_time}")
@@ -82,7 +93,8 @@ def create_calendar_page():
             logger.info("Started Modifying Page")
             response = modify_page(page_id,page_properties)
             logger.info("Modified Page")
-            logger.info(response)
+            logger.info(response
+            )
 
 
 def get_scheduler_details(location):
