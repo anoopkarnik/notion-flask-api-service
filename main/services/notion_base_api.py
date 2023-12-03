@@ -47,9 +47,9 @@ def modify_page(page_id,properties):
         "Content-Type":"application/json"
     }
     body = construct_update_body(properties)
-    # logger.info(body)
+    logger.info(body)
     response = requests.request('PATCH',notion_page_id_url,headers=headers,data=body).json()
-    # logger.info(response)
+    logger.info(response)
     result = modify_result(response)
     return result
 
@@ -69,6 +69,20 @@ def create_page(database_id,properties):
     result = modify_result(response)
     return result
 
+def add_children_to_page(page_id,children):
+    token = os.environ.get('NOTION_TOKEN')
+    notion_url = os.environ.get('NOTION_URL')
+    notion_page_url = os.path.join(notion_url,'blocks',str(page_id),'children')
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Notion-Version":"2022-02-22",
+        "Content-Type":"application/json"
+    }
+    body = construct_children_body(children)
+    print(notion_page_url)
+    response = requests.patch(notion_page_url,headers = headers, data= body).json()
+    logger.info(response)
+    return {'message': "Added the children"}
 
 def construct_create_body(database_id,properties):
     body = {}
@@ -76,13 +90,23 @@ def construct_create_body(database_id,properties):
     body['parent']['type'] = 'database_id'
     body['parent']['database_id'] = database_id
     properties_body = {}
+    
     # logger.info("Creating body")
     # logger.info(properties)
     for property in properties:
         properties_body[property['name']] = modify_property(property)
     body['properties'] = properties_body
     # logger.info(body)
-    return json.dumps(body) 
+    return json.dumps(body)
+
+def construct_children_body(children):
+    body = {}
+    children_body = []
+    for child in children:
+        children_body.append({child['type']:child['value']})
+    logger.info(children_body)
+    body['children'] = children_body
+    return json.dumps(body)
 
 def construct_filter_body(filters,cursor):
     filters_body = {'filter':{'and':[]}}

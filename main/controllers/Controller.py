@@ -5,6 +5,7 @@ from ..services.update_dashboard_status_database import create_dashboard_status_
 from ..services.add_to_calendar import create_calendar_page
 from ..services.notion_base_api import query_database,create_page,modify_page
 from ..services.update_monthly_budget import get_financial_transaction_details
+from ..services.voice_recording_to_notion_pages import transcribe_and_store
 
 payload_controller = Blueprint("payload_controller",__name__)
 
@@ -61,3 +62,9 @@ def create_calendar_controller():
 def update_monthly_budget_controller():
 	get_financial_transaction_details()
 	return jsonify({'message':'Updated Monthly Budget'})
+
+@payload_controller.route("/transcribe_voice_recording",methods=["POST"])
+def transcribe_voice_recording_controller():
+	data = request.json
+	transcribe_and_store(data)
+	return jsonify({'message':'Transcribed And Stored Voice Recording'})
