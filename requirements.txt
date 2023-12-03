@@ -1,6 +1,6 @@
 flask
 Flask-SQLAlchemy
-panda
+pandas
 numpy
 gunicorn
 python-dotenv
