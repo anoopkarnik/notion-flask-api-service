@@ -14,29 +14,18 @@ logger = logging.getLogger(__name__)
 def transcribe_and_store(data):
     file_id = data['file_id']
     # Download the file from Google Drive
-    logger.info(f"Downloading file {file_id}")
     response_stream = download_file_from_google_drive(file_id)
     # Upload the file to S3
-    logger.info(f"Downloaded file {file_id}")
     s3_file_path = os.path.join(os.environ.get('VOICE_RECORDINGS_S3_FILE_PATH'),file_id+'.mp3')
-    logger.info(f"Uploading file {file_id}")
     upload_to_s3(response_stream, s3_file_path)
     # # Transcribe the file
-    logger.info(f"Uploading file {file_id}")
-    logger.info(f"Transcribing file {file_id}")
     transcript = transcribe_file(s3_file_path)
-    logger.info(f"Transcribed file {file_id}")
-    logger.info(f"Getting details from transcript {file_id} through chatgpt")
     chatgpt_response = get_details_from_transcript(transcript)
     logger.info(f"this is the response = {chatgpt_response}")
-    logger.info(f"Making paragraphs {file_id}")
     paragraphs = make_paragraphs(transcript,chatgpt_response)
-    logger.info(f"Creating quick capture page {file_id}")
     notion_response = create_quick_capture_page(chatgpt_response,paragraphs)
     page_id = notion_response['id'].replace('-','')
-    logger.info(f"Created quick capture page {file_id}")
     notion_response = modify_quick_capture_page(page_id,chatgpt_response,paragraphs)
-    logger.info(f"Modified quick capture page {file_id}")
     return notion_response
 
 def download_file_from_google_drive(file_id):
