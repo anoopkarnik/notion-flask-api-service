@@ -8,71 +8,42 @@ import boto3
 import requests
 import pandas as pd
 from ..services.notion_base_api import create_page,add_children_to_page
+from youtube_transcript_api import YouTubeTranscriptApi
 
 logger = logging.getLogger(__name__)
 
-def transcribe_and_store(data):
-    file_id = data['file_id']
+def store(data):
+    video_id = data['video_id']
     # Download the file from Google Drive
-    response_stream = download_file_from_google_drive(file_id)
-    # Upload the file to S3
-    s3_file_path = os.path.join(os.environ.get('VOICE_RECORDINGS_S3_FILE_PATH'),file_id+'.mp3')
-    upload_to_s3(response_stream, s3_file_path)
-    # # Transcribe the file
-    transcript = transcribe_file(s3_file_path)
+    transcript = get_transcript_from_video(video_id)
     chatgpt_response = get_details_from_transcript(transcript)
     logger.info(f"this is the response = {chatgpt_response}")
     paragraphs = make_paragraphs(transcript,chatgpt_response)
-    notion_response = create_quick_capture_page(chatgpt_response,paragraphs)
+    notion_response = create_quick_capture_page(chatgpt_response,paragraphs,video_id)
     page_id = notion_response['id'].replace('-','')
     notion_response = modify_quick_capture_page(page_id,chatgpt_response,paragraphs)
     return notion_response
 
-def download_file_from_google_drive(file_id):
-    URL = "https://drive.google.com/uc?id=" + file_id
 
-    session = requests.Session()
-    response = session.get(URL, stream=True)
-    token = get_confirm_token(response)
-
-    if token:
-        params = {'id': file_id, 'confirm': token}
-        response = session.get(URL, params=params, stream=True)
-
-    return response
-
-def get_confirm_token(response):
-    for key, value in response.cookies.items():
-        if key.startswith('download_warning'):
-            return value
-    return None
-
-def upload_to_s3(response_stream, s3_file_path):
-    bucket_name = os.environ.get('VOICE_RECORDINGS_S3_BUCKET_NAME')
-    s3 = boto3.client('s3', aws_access_key_id=os.environ.get('AWS_ACCESS_KEY_ID'), 
-    aws_secret_access_key=os.environ.get('AWS_SECRET_ACCESS_KEY'))
-    s3.upload_fileobj(response_stream.raw, bucket_name, s3_file_path)
-
-def transcribe_file(location_path):
-    speech_to_text_url = os.path.join(os.environ.get('CHATGPT_CLIENT_URL'),os.environ.get('SPEECH_TO_TEXT_CONTEXT_PATH'))
-    payload = {'location_path':location_path}
-    print(speech_to_text_url)
-    print(payload)
-    response = requests.post(speech_to_text_url, data=json.dumps(payload),headers={'Content-Type':'application/json'}).json()
-    return response['text']
+def get_transcript_from_video(video_id):
+    dicts = YouTubeTranscriptApi.get_transcript(video_id)
+    text = ' '.join([x['text'] for x in dicts])
+    return text
 
 def get_details_from_transcript(transcript):
     chat_url = os.path.join(os.environ.get('CHATGPT_CLIENT_URL'),os.environ.get('CHAT_CONTEXT_PATH'))
     system_instructions = """You are an assistant with expertise PHD in psychology and philosophy in all fields and speak only JSON. 
     Do not write normal txt. Example formatting: {"title":"A string" , "summary": "A String", "main_points": ["A String","A String"],
-    "action_items": {"tasks":["A String","A String"],"habits":["A String","A String"]},"follow_up": ["A String","A String"],"arguments": ["A String","A String"]}"""
+    "action_items": {"tasks":["A String","A String"],"habits":["A String","A String"]},"follow_up": ["A String","A String"],"arguments": ["A String","A String"]},"stories":["A String","A String"]"""
     format = "json_object"
     message = """Analyze the transcript provided below and then provde the following : title,summary (in transcript size by
-    10),main_points (covering all important things),
-     action_items (covering all actions possible as a task and or as habits),follow_up( Follow up questions which need to be 
-    researched on), get_arguments (arguments against the transcript) ---"""+transcript  
+    10),main_points (covering all important things in bulleted lists),
+     action_items (covering all actions possible as a task and or as habits in to_do lists),follow_up( Follow up questions which need to be 
+    researched on in bulleted lists), get_arguments (arguments against the transcript in bulletted lists), stories (stories in the transcript in bulletted lists) ---"""+transcript  
     payload = {'message':message,'system_instructions':system_instructions,'format':format}
-    chatgpt_response = requests.post(chat_url, data=json.dumps(payload),headers={'Content-Type':'application/json'}).json()
+    chatgpt_response = requests.post(chat_url, data=json.dumps(payload),headers={'Content-Type':'application/json'})
+    logger.info(f"Response from chatgpt api - {chatgpt_response}")
+    chatgpt_response=chatgpt_response.json()
     return chatgpt_response
     
 def make_paragraphs(transcript,response):
@@ -101,7 +72,7 @@ def make_paragraphs(transcript,response):
     # Return data for use in future steps
     return allParagraphs
 
-def create_quick_capture_page(response,paragraphs):
+def create_quick_capture_page(response,paragraphs,video_id):
     gptTurboRate = 0.001
     tokens = response['usage']['total_tokens']
     chat_cost = round((float(tokens)*gptTurboRate),3)
@@ -109,8 +80,9 @@ def create_quick_capture_page(response,paragraphs):
     logger.info("Started Creating Page")
     properties = []
     properties.append({'name':'Name','type':'title','value':title})
-    properties.append({'name':'Tags','type':'select','value':'Voice Notes'})
+    properties.append({'name':'Tags','type':'select','value':'AI Youtube Transcription'})
     properties.append({'name':'AI Cost','type':'number','value':chat_cost})
+    properties.append({'name':'URL','type':'url','value':f"https://www.youtube.com/watch?v={video_id}"})
     response = create_page(os.environ.get('QUICK_CAPTURE_DB_ID'),properties)
     logger.info("Created Page")
     return response
@@ -145,6 +117,9 @@ def modify_quick_capture_page(page_id,chatgpt_response,paragraphs):
         children.append({'type':'bulleted_list_item','value':{'rich_text':[{'text':{'content':item}}]}})
     children.append({'type':'heading_1','value':{'rich_text':[{'text':{'content':'Arguments against the thoughts'}}]}})
     for item in content['arguments']:
+        children.append({'type':'bulleted_list_item','value':{'rich_text':[{'text':{'content':item}}]}})
+    children.append({'type':'heading_1','value':{'rich_text':[{'text':{'content':'Stories'}}]}})
+    for item in content['stories']:
         children.append({'type':'bulleted_list_item','value':{'rich_text':[{'text':{'content':item}}]}})
     children.append({'type':'heading_1','value':{'rich_text':[{'text':{'content':'Transcript'}}]}}) 
     for transcript in paragraphs['transcript']:

@@ -6,6 +6,7 @@ from ..services.add_to_calendar import create_calendar_page
 from ..services.notion_base_api import query_database,create_page,modify_page
 from ..services.update_monthly_budget import get_financial_transaction_details
 from ..services.voice_recording_to_notion_pages import transcribe_and_store
+from ..services.youtube_playlist_to_notion_pages import store
 
 payload_controller = Blueprint("payload_controller",__name__)
 
@@ -68,3 +69,9 @@ def transcribe_voice_recording_controller():
 	data = request.json
 	transcribe_and_store(data)
 	return jsonify({'message':'Transcribed And Stored Voice Recording'})
+
+@payload_controller.route("/transcribe_youtube_video",methods=["POST"])
+def transcribe_youtube_video_controller():
+	data = request.json
+	store(data)
+	return jsonify({'message':'Transcribed And Stored Youtube Video'})

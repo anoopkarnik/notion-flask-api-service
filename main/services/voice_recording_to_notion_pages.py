@@ -69,8 +69,10 @@ def transcribe_file(location_path):
     payload = {'location_path':location_path}
     print(speech_to_text_url)
     print(payload)
-    response = requests.post(speech_to_text_url, data=json.dumps(payload),headers={'Content-Type':'application/json'}).json()
-    return response['text']
+    chatgpt_response = requests.post(speech_to_text_url, data=json.dumps(payload),headers={'Content-Type':'application/json'})
+    logger.info(f"Response from chatgpt api - {chatgpt_response}")
+    chatgpt_response=chatgpt_response.json()
+    return chatgpt_response['text']
 
 def get_details_from_transcript(transcript):
     chat_url = os.path.join(os.environ.get('CHATGPT_CLIENT_URL'),os.environ.get('CHAT_CONTEXT_PATH'))
@@ -83,7 +85,9 @@ def get_details_from_transcript(transcript):
      action_items (covering all actions possible as a task and or as habits),follow_up( Follow up questions which need to be 
     researched on), get_arguments (arguments against the transcript) ---"""+transcript  
     payload = {'message':message,'system_instructions':system_instructions,'format':format}
-    chatgpt_response = requests.post(chat_url, data=json.dumps(payload),headers={'Content-Type':'application/json'}).json()
+    chatgpt_response = requests.post(chat_url, data=json.dumps(payload),headers={'Content-Type':'application/json'})
+    logger.info(f"Response from chatgpt api - {chatgpt_response}")
+    chatgpt_response=chatgpt_response.json()
     return chatgpt_response
     
 def make_paragraphs(transcript,response):

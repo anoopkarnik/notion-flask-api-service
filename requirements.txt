@@ -8,3 +8,4 @@ pytz
 apscheduler
 boto3
 requests
+youtube_transcript_api
