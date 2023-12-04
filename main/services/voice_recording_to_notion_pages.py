@@ -35,7 +35,7 @@ def transcribe_and_store(data):
     notion_response = create_quick_capture_page(chatgpt_response,paragraphs)
     page_id = notion_response['id'].replace('-','')
     logger.info(f"Created quick capture page {file_id}")
-    notion_response = modify_quick_capture_page(page_id,chatgpt_response,paragraphs).json()
+    notion_response = modify_quick_capture_page(page_id,chatgpt_response,paragraphs)
     logger.info(f"Modified quick capture page {file_id}")
     return notion_response
 
