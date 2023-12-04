@@ -19,8 +19,9 @@ def get_financial_transaction_details():
 
 
 def update_transaction_details(result):
+    # logger.info(f"Updating transaction details for {result}")
     properties = []
-    properties.append({'name':'Old Monthly Budget','type':'relation','value':[x['id'] for x in result['Monthly Budget']]})
+    properties.append({'name':'Old Monthly Budget','type':'relation','value':[x for x in result['Monthly Budget']]})
     properties.append({'name':'Monthly Budget','type':'relation','value':[]})
     response = modify_page(result['id'],properties)
     return response
