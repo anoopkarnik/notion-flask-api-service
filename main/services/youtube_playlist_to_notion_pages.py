@@ -21,7 +21,7 @@ def store(data):
     paragraphs = make_paragraphs(transcript,chatgpt_response)
     notion_response = create_quick_capture_page(chatgpt_response,paragraphs,video_id)
     page_id = notion_response['id'].replace('-','')
-    notion_response = modify_quick_capture_page(page_id,chatgpt_response,paragraphs)
+    notion_response = modify_quick_capture_page(page_id,chatgpt_response,paragraphs,video_id)
     return notion_response
 
 
@@ -40,7 +40,7 @@ def get_details_from_transcript(transcript):
     10),main_points (covering all important things in bulleted lists),
      action_items (covering all actions possible as a task and or as habits in to_do lists),follow_up( Follow up questions which need to be 
     researched on in bulleted lists), get_arguments (arguments against the transcript in bulletted lists), stories (stories in the transcript in bulletted lists) ---"""+transcript  
-    payload = {'message':message,'system_instructions':system_instructions,'format':format}
+    payload = {'message':message,'system_instructions':system_instructions,'format':format,"model":"gpt-3.5-turbo-1106"}
     chatgpt_response = requests.post(chat_url, data=json.dumps(payload),headers={'Content-Type':'application/json'})
     logger.info(f"Response from chatgpt api - {chatgpt_response}")
     chatgpt_response=chatgpt_response.json()
@@ -75,22 +75,25 @@ def make_paragraphs(transcript,response):
 def create_quick_capture_page(response,paragraphs,video_id):
     gptTurboRate = 0.001
     tokens = response['usage']['total_tokens']
-    chat_cost = round((float(tokens)*gptTurboRate),3)
+    chat_cost = round((float(tokens)*gptTurboRate)/1000,3)
     title = json.loads(response['choices'][0]['message']['content'])['title']
     logger.info("Started Creating Page")
     properties = []
     properties.append({'name':'Name','type':'title','value':title})
     properties.append({'name':'Tags','type':'select','value':'AI Youtube Transcription'})
     properties.append({'name':'AI Cost','type':'number','value':chat_cost})
-    properties.append({'name':'URL','type':'url','value':f"https://www.youtube.com/watch?v={video_id}"})
+    properties.append({'name':'URL','type':'url','value':f"https://www.youtube.com/watch?v={str(video_id)}"})
     response = create_page(os.environ.get('QUICK_CAPTURE_DB_ID'),properties)
     logger.info("Created Page")
     return response
 
-def modify_quick_capture_page(page_id,chatgpt_response,paragraphs):
+def modify_quick_capture_page(page_id,chatgpt_response,paragraphs,video_id):
     logger.info(f"Updating Page {page_id}")
     date = datetime.today().strftime('%Y-%m-%d')
     children = []
+    children.append({'type':'embed', 'value':{
+        'url':f"https://www.youtube.com/watch?v={str(video_id)}",
+        }})
     children.append({'type':'callout','value':{
         'rich_text':[
             {"text":{"content": " This AI transcription and summary was created on "}},

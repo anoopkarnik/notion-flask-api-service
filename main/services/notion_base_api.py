@@ -63,7 +63,7 @@ def create_page(database_id,properties):
         "Content-Type":"application/json"
     }
     body = construct_create_body(database_id,properties)
-    print(body)
+    logger.info(body)
     response = requests.post(notion_page_url,headers = headers, data= body).json()
     logger.info(response)
     result = modify_result(response)
@@ -189,6 +189,8 @@ def modify_property(property):
         return {'number':property['value']}
     elif property['type'] == 'file_url':
         return {'files':[{'type':'external','name':'Cover','external':{'url':property['value']}}]}
+    elif property['type'] =='url':
+        return {'url':property['value']}
     elif property['type'] == 'select':
         return {'select':{'name':property['value']}}
     elif property['type'] == 'multi_select':

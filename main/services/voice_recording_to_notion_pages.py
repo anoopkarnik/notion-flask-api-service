@@ -32,7 +32,7 @@ def transcribe_and_store(data):
     logger.info(f"Making paragraphs {file_id}")
     paragraphs = make_paragraphs(transcript,chatgpt_response)
     logger.info(f"Creating quick capture page {file_id}")
-    notion_response = create_quick_capture_page(chatgpt_response,paragraphs)
+    notion_response = create_quick_capture_page(chatgpt_response,paragraphs,file_id)
     page_id = notion_response['id'].replace('-','')
     logger.info(f"Created quick capture page {file_id}")
     notion_response = modify_quick_capture_page(page_id,chatgpt_response,paragraphs)
@@ -84,7 +84,7 @@ def get_details_from_transcript(transcript):
     10),main_points (covering all important things),
      action_items (covering all actions possible as a task and or as habits),follow_up( Follow up questions which need to be 
     researched on), get_arguments (arguments against the transcript) ---"""+transcript  
-    payload = {'message':message,'system_instructions':system_instructions,'format':format}
+    payload = {'message':message,'system_instructions':system_instructions,'format':format,"model":"gpt-3.5-turbo-1106"}
     chatgpt_response = requests.post(chat_url, data=json.dumps(payload),headers={'Content-Type':'application/json'})
     logger.info(f"Response from chatgpt api - {chatgpt_response}")
     chatgpt_response=chatgpt_response.json()
@@ -116,16 +116,18 @@ def make_paragraphs(transcript,response):
     # Return data for use in future steps
     return allParagraphs
 
-def create_quick_capture_page(response,paragraphs):
+def create_quick_capture_page(response,paragraphs,file_id):
+    URL = "https://drive.google.com/uc?id=" + file_id
     gptTurboRate = 0.001
     tokens = response['usage']['total_tokens']
-    chat_cost = round((float(tokens)*gptTurboRate),3)
+    chat_cost = round((float(tokens)*gptTurboRate/1000),3)
     title = json.loads(response['choices'][0]['message']['content'])['title']
     logger.info("Started Creating Page")
     properties = []
     properties.append({'name':'Name','type':'title','value':title})
     properties.append({'name':'Tags','type':'select','value':'Voice Notes'})
     properties.append({'name':'AI Cost','type':'number','value':chat_cost})
+    properties.append({'name':'URL','type':'url','value':f"{URL}"})
     response = create_page(os.environ.get('QUICK_CAPTURE_DB_ID'),properties)
     logger.info("Created Page")
     return response
