@@ -3,7 +3,7 @@ import threading
 import os
 import atexit
 # from main.models.Model import db
-from main.controllers import Controller
+from main.controllers import Controller,AnkiController
 from main.utils.scheduler import schedule_jobs
 from apscheduler.schedulers.background import BackgroundScheduler
 from dotenv import load_dotenv
@@ -21,6 +21,7 @@ def create_app():
 	schedule_jobs(scheduler)
 	atexit.register(lambda: scheduler.shutdown())
 	app.register_blueprint(Controller.payload_controller)
+	app.register_blueprint(AnkiController.anki_controller)
 	return app
 
 app = create_app()
