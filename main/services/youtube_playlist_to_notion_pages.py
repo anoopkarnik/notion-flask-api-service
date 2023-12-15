@@ -89,9 +89,7 @@ def modify_quick_capture_page(page_id,chatgpt_response,paragraphs,video_id):
     logger.info(f"Updating Page {page_id}")
     date = datetime.today().strftime('%Y-%m-%d')
     children = []
-    children.append({'type':'embed', 'value':{
-        'url':f"https://www.youtube.com/watch?v={str(video_id)}",
-        }})
+    children.append({'type':'embed', 'value':f"https://www.youtube.com/watch?v={str(video_id)}"})
     children.append({'type':'callout','value':{
         'rich_text':[
             {"text":{"content": " This AI transcription and summary was created on "}},

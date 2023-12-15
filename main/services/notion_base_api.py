@@ -222,6 +222,8 @@ def modify_children_property(prop):
         return {'color':'default'}
     elif prop['type'] == 'callout':
         return prop['value']
+    elif prop['type'] == 'embed':
+        return {'url':prop['value']}
     else:
         return {'rich_text':[{'text':{'content':prop['value']}}]}
     
