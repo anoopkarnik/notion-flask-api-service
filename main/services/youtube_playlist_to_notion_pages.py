@@ -98,33 +98,33 @@ def modify_quick_capture_page(page_id,chatgpt_response,paragraphs,video_id):
             {"mention" : {"type" : "date" , "date": {"start":date}}},
             {"text":{"content":". "}}
         ],"color":"blue_background"}})
-    children.append({'type':'table_of_contents','value':{'color':'default'}})
-    children.append({'type':'heading_1','value':{'rich_text':[{'text':{'content':'Summary'}}]}})
+    children.append({'type':'table_of_contents'})
+    children.append({'type':'heading_1','value':'Summary'})
     for summary in paragraphs['summary']:
-        children.append({'type':'paragraph','value':{'rich_text':[{"text":{"content":summary}}]}})
+        children.append({'type':'paragraph','value':summary})
     content = json.loads(chatgpt_response['choices'][0]['message']['content'])
-    children.append({'type':'heading_1','value':{'rich_text':[{'text':{'content':'Main Points'}}]}})
+    children.append({'type':'heading_1','value':'Main Points'})
     for item in content['main_points']:
-        children.append({'type':'bulleted_list_item','value':{'rich_text':[{'text':{'content':item}}]}})
-    children.append({'type':'heading_1','value':{'rich_text':[{'text':{'content':'Potential Action Items'}}]}})
-    children.append({'type':'heading_2','value':{'rich_text':[{'text':{'content':'Potential Tasks'}}]}})
+        children.append({'type':'bulleted_list_item','value':item})
+    children.append({'type':'heading_1','value':'Potential Action Items'})
+    children.append({'type':'heading_2','value':'Potential Tasks'})
     for item in content['action_items']['tasks']:
-        children.append({'type':'to_do','value':{'rich_text':[{'text':{'content':item}}]}})
-    children.append({'type':'heading_2','value':{'rich_text':[{'text':{'content':'Potential Habits'}}]}}) 
+        children.append({'type':'to_do','value':item})
+    children.append({'type':'heading_2','value':'Potential Habits'}) 
     for item in content['action_items']['habits']:
-        children.append({'type':'to_do','value':{'rich_text':[{'text':{'content':item}}]}})
-    children.append({'type':'heading_1','value':{'rich_text':[{'text':{'content':'Follow Up Questions'}}]}})
+        children.append({'type':'to_do','value':item})
+    children.append({'type':'heading_1','value':'Follow Up Questions'})
     for item in content['follow_up']:
-        children.append({'type':'bulleted_list_item','value':{'rich_text':[{'text':{'content':item}}]}})
-    children.append({'type':'heading_1','value':{'rich_text':[{'text':{'content':'Arguments against the thoughts'}}]}})
+        children.append({'type':'bulleted_list_item','value':item})
+    children.append({'type':'heading_1','value':'Arguments against the thoughts'})
     for item in content['arguments']:
-        children.append({'type':'bulleted_list_item','value':{'rich_text':[{'text':{'content':item}}]}})
-    children.append({'type':'heading_1','value':{'rich_text':[{'text':{'content':'Stories'}}]}})
+        children.append({'type':'bulleted_list_item','value':item})
+    children.append({'type':'heading_1','value':'Stories'})
     for item in content['stories']:
-        children.append({'type':'bulleted_list_item','value':{'rich_text':[{'text':{'content':item}}]}})
-    children.append({'type':'heading_1','value':{'rich_text':[{'text':{'content':'Transcript'}}]}}) 
+        children.append({'type':'bulleted_list_item','value':item})
+    children.append({'type':'heading_1','value':'Transcript'}) 
     for transcript in paragraphs['transcript']:
-        children.append({'type':'paragraph','value':{'rich_text':[{"text":{"content":transcript}}]}})
+        children.append({'type':'paragraph','value':transcript})
     response = add_children_to_page(page_id,children)
     logger.info("Updated Page")
     return response
