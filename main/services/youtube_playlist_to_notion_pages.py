@@ -7,8 +7,9 @@ import logging
 import boto3
 import requests
 import pandas as pd
-from ..services.notion_base_api import create_page,add_children_to_page
+from ..services.notion_base_api import create_notion_page,add_children_to_page
 from youtube_transcript_api import YouTubeTranscriptApi
+from ..clients.chatgpt_client import speech_to_text,get_chatgpt_reply
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +32,6 @@ def get_transcript_from_video(video_id):
     return text
 
 def get_details_from_transcript(transcript):
-    chat_url = os.path.join(os.environ.get('CHATGPT_CLIENT_URL'),os.environ.get('CHAT_CONTEXT_PATH'))
     system_instructions = """You are an assistant with expertise PHD in psychology and philosophy in all fields and speak only JSON. 
     Do not write normal txt. Example formatting: {"title":"A string" , "summary": "A String", "main_points": ["A String","A String"],
     "action_items": {"tasks":["A String","A String"],"habits":["A String","A String"]},"follow_up": ["A String","A String"],"arguments": ["A String","A String"]},"stories":["A String","A String"]"""
@@ -40,10 +40,8 @@ def get_details_from_transcript(transcript):
     10),main_points (covering all important things in bulleted lists),
      action_items (covering all actions possible as a task and or as habits in to_do lists),follow_up( Follow up questions which need to be 
     researched on in bulleted lists), get_arguments (arguments against the transcript in bulletted lists), stories (stories in the transcript in bulletted lists) ---"""+transcript  
-    payload = {'message':message,'system_instructions':system_instructions,'format':format,"model":"gpt-3.5-turbo-1106"}
-    chatgpt_response = requests.post(chat_url, data=json.dumps(payload),headers={'Content-Type':'application/json'})
+    chatgpt_response = get_chatgpt_reply(system_instructions,format,message,"gpt-3.5-turbo-1106")
     logger.info(f"Response from chatgpt api - {chatgpt_response}")
-    chatgpt_response=chatgpt_response.json()
     return chatgpt_response
     
 def make_paragraphs(transcript,response):
@@ -83,7 +81,7 @@ def create_quick_capture_page(response,paragraphs,video_id):
     properties.append({'name':'Tags','type':'select','value':'AI Youtube Transcription'})
     properties.append({'name':'AI Cost','type':'number','value':chat_cost})
     properties.append({'name':'URL','type':'url','value':f"https://www.youtube.com/watch?v={str(video_id)}"})
-    response = create_page(os.environ.get('QUICK_CAPTURE_DB_ID'),properties)
+    response = create_notion_page(os.environ.get('QUICK_CAPTURE_DB_ID'),properties)
     logger.info("Created Page")
     return response
 

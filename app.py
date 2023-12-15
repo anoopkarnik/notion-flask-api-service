@@ -3,7 +3,7 @@ import threading
 import os
 import atexit
 # from main.models.Model import db
-from main.controllers import Controller,AnkiController
+from main.controllers import Controller,AnkiController,NotionController
 from main.utils.scheduler import schedule_jobs
 from apscheduler.schedulers.background import BackgroundScheduler
 from dotenv import load_dotenv
@@ -17,11 +17,12 @@ def create_app():
                     format='%(asctime)s:%(levelname)s:%(message)s')
 	app.logger.info('Info level log')
 	app.logger.error('Error level log')
-	scheduler = BackgroundScheduler()
-	schedule_jobs(scheduler)
-	atexit.register(lambda: scheduler.shutdown())
+	# scheduler = BackgroundScheduler()
+	# schedule_jobs(scheduler)
+	# atexit.register(lambda: scheduler.shutdown())
 	app.register_blueprint(Controller.payload_controller)
 	app.register_blueprint(AnkiController.anki_controller)
+	app.register_blueprint(NotionController.notion_controller)
 	return app
 
 app = create_app()

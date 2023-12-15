@@ -7,7 +7,8 @@ import logging
 import boto3
 import requests
 import pandas as pd
-from ..services.notion_base_api import create_page,add_children_to_page
+from ..services.notion_base_api import create_notion_page,add_children_to_page
+from ..clients.chatgpt_client import speech_to_text,get_chatgpt_reply
 
 logger = logging.getLogger(__name__)
 
@@ -65,17 +66,10 @@ def upload_to_s3(response_stream, s3_file_path):
     s3.upload_fileobj(response_stream.raw, bucket_name, s3_file_path)
 
 def transcribe_file(location_path):
-    speech_to_text_url = os.path.join(os.environ.get('CHATGPT_CLIENT_URL'),os.environ.get('SPEECH_TO_TEXT_CONTEXT_PATH'))
-    payload = {'location_path':location_path}
-    print(speech_to_text_url)
-    print(payload)
-    chatgpt_response = requests.post(speech_to_text_url, data=json.dumps(payload),headers={'Content-Type':'application/json'})
-    logger.info(f"Response from chatgpt api - {chatgpt_response}")
-    chatgpt_response=chatgpt_response.json()
+    chatgpt_response = speech_to_text(location_path)
     return chatgpt_response['text']
 
 def get_details_from_transcript(transcript):
-    chat_url = os.path.join(os.environ.get('CHATGPT_CLIENT_URL'),os.environ.get('CHAT_CONTEXT_PATH'))
     system_instructions = """You are an assistant with expertise PHD in psychology and philosophy in all fields and speak only JSON. 
     Do not write normal txt. Example formatting: {"title":"A string" , "summary": "A String", "main_points": ["A String","A String"],
     "action_items": {"tasks":["A String","A String"],"habits":["A String","A String"]},"follow_up": ["A String","A String"],"arguments": ["A String","A String"]}"""
@@ -84,10 +78,8 @@ def get_details_from_transcript(transcript):
     10),main_points (covering all important things),
      action_items (covering all actions possible as a task and or as habits),follow_up( Follow up questions which need to be 
     researched on), get_arguments (arguments against the transcript) ---"""+transcript  
-    payload = {'message':message,'system_instructions':system_instructions,'format':format,"model":"gpt-3.5-turbo-1106"}
-    chatgpt_response = requests.post(chat_url, data=json.dumps(payload),headers={'Content-Type':'application/json'})
+    chatgpt_response = get_chatgpt_reply(system_instructions,format,message,"gpt-3.5-turbo-1106")
     logger.info(f"Response from chatgpt api - {chatgpt_response}")
-    chatgpt_response=chatgpt_response.json()
     return chatgpt_response
     
 def make_paragraphs(transcript,response):
@@ -128,7 +120,7 @@ def create_quick_capture_page(response,paragraphs,file_id):
     properties.append({'name':'Tags','type':'select','value':'Voice Notes'})
     properties.append({'name':'AI Cost','type':'number','value':chat_cost})
     properties.append({'name':'URL','type':'url','value':f"{URL}"})
-    response = create_page(os.environ.get('QUICK_CAPTURE_DB_ID'),properties)
+    response = create_notion_page(os.environ.get('QUICK_CAPTURE_DB_ID'),properties)
     logger.info("Created Page")
     return response
 
@@ -142,30 +134,30 @@ def modify_quick_capture_page(page_id,chatgpt_response,paragraphs):
             {"mention" : {"type" : "date" , "date": {"start":date}}},
             {"text":{"content":". "}}
         ],"color":"blue_background"}})
-    children.append({'type':'table_of_contents','value':{'color':'default'}})
-    children.append({'type':'heading_1','value':{'rich_text':[{'text':{'content':'Summary'}}]}})
+    children.append({'type':'table_of_contents'})
+    children.append({'type':'heading_1','value':'Summary'})
     for summary in paragraphs['summary']:
-        children.append({'type':'paragraph','value':{'rich_text':[{"text":{"content":summary}}]}})
+        children.append({'type':'paragraph','value':summary})
     content = json.loads(chatgpt_response['choices'][0]['message']['content'])
-    children.append({'type':'heading_1','value':{'rich_text':[{'text':{'content':'Main Points'}}]}})
+    children.append({'type':'heading_1','value':'Main Points'})
     for item in content['main_points']:
-        children.append({'type':'bulleted_list_item','value':{'rich_text':[{'text':{'content':item}}]}})
-    children.append({'type':'heading_1','value':{'rich_text':[{'text':{'content':'Potential Action Items'}}]}})
-    children.append({'type':'heading_2','value':{'rich_text':[{'text':{'content':'Potential Tasks'}}]}})
+        children.append({'type':'bulleted_list_item','value':item})
+    children.append({'type':'heading_1','value':'Potential Action Items'})
+    children.append({'type':'heading_2','value':'Potential Tasks'})
     for item in content['action_items']['tasks']:
-        children.append({'type':'to_do','value':{'rich_text':[{'text':{'content':item}}]}})
-    children.append({'type':'heading_2','value':{'rich_text':[{'text':{'content':'Potential Habits'}}]}}) 
+        children.append({'type':'to_do','value':item})
+    children.append({'type':'heading_2','value':'Potential Habits'}) 
     for item in content['action_items']['habits']:
-        children.append({'type':'to_do','value':{'rich_text':[{'text':{'content':item}}]}})
-    children.append({'type':'heading_1','value':{'rich_text':[{'text':{'content':'Follow Up Questions'}}]}})
+        children.append({'type':'to_do','value':item})
+    children.append({'type':'heading_1','value':'Follow Up Questions'})
     for item in content['follow_up']:
-        children.append({'type':'bulleted_list_item','value':{'rich_text':[{'text':{'content':item}}]}})
-    children.append({'type':'heading_1','value':{'rich_text':[{'text':{'content':'Arguments against the thoughts'}}]}})
+        children.append({'type':'bulleted_list_item','value':item})
+    children.append({'type':'heading_1','value':'Arguments against the thoughts'})
     for item in content['arguments']:
-        children.append({'type':'bulleted_list_item','value':{'rich_text':[{'text':{'content':item}}]}})
-    children.append({'type':'heading_1','value':{'rich_text':[{'text':{'content':'Transcript'}}]}}) 
+        children.append({'type':'bulleted_list_item','value':item})
+    children.append({'type':'heading_1','value':'Transcript'}) 
     for transcript in paragraphs['transcript']:
-        children.append({'type':'paragraph','value':{'rich_text':[{"text":{"content":transcript}}]}})
+        children.append({'type':'paragraph','value':transcript})
     response = add_children_to_page(page_id,children)
     logger.info("Updated Page")
     return response

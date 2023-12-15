@@ -4,7 +4,7 @@ import datetime
 import pytz
 import requests
 import time
-from ..services.notion_base_api import query_database,create_page,modify_page
+from ..services.notion_base_api import query_notion_database,create_notion_page,modify_notion_page
 import logging
 
 logger = logging.getLogger(__name__)
@@ -85,13 +85,13 @@ def create_calendar_page():
                 logger.info(f"Triggered {row['Name']} - {scheduled_time}")
         if triggered:
             logger.info("Started Creating Page")
-            response = create_page(database_id,properties)
+            response = create_notion_page(database_id,properties)
             logger.info("Created Page")
             logger.info(response)
             page_properties = []
             page_properties.append({'name':'Last Triggered Date','type':'date','value':local_last_triggered_time.strftime("%Y-%m-%d")})
             logger.info("Started Modifying Page")
-            response = modify_page(page_id,page_properties)
+            response = modify_notion_page(page_id,page_properties)
             logger.info("Modified Page")
             logger.info(response
             )
@@ -104,7 +104,7 @@ def get_scheduler_details(location):
     filters.append({"name":"Start Date",'type':"date",'condition':"on_or_before",'value':current_time_gmt.strftime("%Y-%m-%d")})
     filters.append({'name':'Location','type':'multi_select','condition':'contains','value':location})
     logger.info("Querying Database")
-    results = query_database(os.environ.get('SCHEDULER_DB_ID'),filters).get('results',[])
+    results = query_notion_database(os.environ.get('SCHEDULER_DB_ID'),filters).get('results',[])
     logger.info("Queried Database")
     return results
 
@@ -112,7 +112,7 @@ def get_current_location():
     filters = []
     filters.append({"name":"End Time",'type':'date','condition':'is_empty','value':True})
     logger.info("Querying Database")
-    results = query_database(os.environ.get('TIMEBOX_DB_ID'),filters).get('results',[])
+    results = query_notion_database(os.environ.get('TIMEBOX_DB_ID'),filters).get('results',[])
     logger.info("Queried Database")
     if len(results) == 0:
         return 'Home'

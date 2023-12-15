@@ -3,8 +3,9 @@ import os
 import json
 import datetime
 import pytz  # This library helps with time zone handling
-from ..services.notion_base_api import query_database,create_page,modify_page
+from ..services.notion_base_api import query_notion_database,create_notion_page,modify_notion_page
 import logging
+from ..clients.google_books_client import get_google_books_details
 
 logger = logging.getLogger(__name__)
 
@@ -15,8 +16,8 @@ def update_books():
     ten_minutes_ago_gmt = current_time_gmt - datetime.timedelta(minutes=10)
     book_database_id = os.environ.get('BOOKS_DB_ID')
     filters = []
-    filters.append({'type':'created_time','condition':'on_or_after','value':ten_minutes_ago_gmt.strftime("%Y-%m-%dT%H:%M:%SZ")})
-    results = query_database(book_database_id,filters).get('results',[])
+    filters.append({'type':'last_edited_time','condition':'on_or_after','value':ten_minutes_ago_gmt.strftime("%Y-%m-%dT%H:%M:%SZ")})
+    results = query_notion_database(book_database_id,filters).get('results',[])
     for result in results:
         id = result['id']
         title = result['Name']
@@ -25,15 +26,6 @@ def update_books():
         update_book_properties(id,book_details)
         logger.info(f"Completed Updating properties for {title}")
 
-
-def get_google_books_details(title):
-    google_books_url = os.environ.get('GOOGLE_BOOKS_URL')
-    params = {}
-    params['q']=title
-    params['startIndex']=0
-    params['maxResults']=1
-    response = requests.get(google_books_url,params=params).json()
-    return response['items'][0]['volumeInfo']
     
 def update_book_properties(id,book_details):
     properties = []
@@ -47,7 +39,7 @@ def update_book_properties(id,book_details):
         properties.append({'name':'Thumbnail','type':'file_url','value':book_details['imageLinks']['thumbnail']})
     if 'categories' in book_details:
         properties.append({'name':'Genres','type':'multi_select','value':[x for x in book_details['categories']]})
-    response = modify_page(id,properties)
+    response = modify_notion_page(id,properties)
     
 
 
