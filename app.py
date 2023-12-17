@@ -18,7 +18,7 @@ def create_app():
 	app.logger.info('Info level log')
 	app.logger.error('Error level log')
 	scheduler = BackgroundScheduler()
-	schedule_jobs(scheduler)
+	# schedule_jobs(scheduler)
 	atexit.register(lambda: scheduler.shutdown())
 	app.register_blueprint(Controller.payload_controller)
 	app.register_blueprint(AnkiController.anki_controller)

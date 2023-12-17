@@ -17,12 +17,14 @@ def query_notion_database(database_id,filters):
         body = construct_filter_body(filters,cursor)
         logger.info(f'constructed filter body - {body}')
         response = query_database(database_id,body)
-        # logger.info(response)
+        logger.info(response)
         if len(response['results'])>0:
             has_more = response['has_more']
             cursor = response['next_cursor']
             for result in response['results']:
                 results.append(modify_result(result))
+        else:
+            has_more = False
     return {'results':results}
 
 
@@ -234,4 +236,3 @@ def delete_page_blocks(page_id):
         for result in response['results']:
             delete_block(result['id'])
     return {'message': "Deleted the children"}
-    

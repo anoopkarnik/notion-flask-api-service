@@ -33,22 +33,14 @@ def create_database(parent,title,properties):
     return response
 
 def query_database(database_id,filters_body):
-    if len(filters_body['filter']['and'])==0:
-        url = f"{notion_url}/databases/{database_id}"
-        headers = {
-            "Authorization": f"Bearer {token}",
-            "Notion-Version": "2022-02-22"
-        }
-        response = requests.get(url,headers=headers).json()
-    else:
-        url = f"{notion_url}/databases/{database_id}/query"
-        logger.info(url)
-        headers = {
-            "Authorization": f"Bearer {token}",
-            "Notion-Version": "2022-02-22",
-            "Content-Type": "application/json"
-        }
-        response = requests.post(url,headers=headers,json=filters_body).json()
+    url = f"{notion_url}/databases/{database_id}/query"
+    logger.info(url)
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Notion-Version": "2022-02-22",
+        "Content-Type": "application/json"
+    }
+    response = requests.post(url,headers=headers,json=filters_body).json()
     logger.info(response)
     return response
     

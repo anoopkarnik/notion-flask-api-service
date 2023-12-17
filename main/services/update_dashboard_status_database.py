@@ -32,6 +32,7 @@ def create_dashboard_status_updates_page():
     response = create_notion_page(database_id,properties)
 
 def get_task_details():
+    logger.info('Getting task details')
     result = {}
     filters = []
     filters.append({'name':'Done','type':'checkbox','condition':'equals','value':False})
@@ -44,9 +45,11 @@ def get_task_details():
     result['not_imp_not_urg_no'] = len(query_notion_database(os.environ.get('TASKS_DB_ID'),filters).get('results',[]))
     filters[1]['value'] = True
     result['not_imp_urg_no'] = len(query_notion_database(os.environ.get('TASKS_DB_ID'),filters).get('results',[]))
+    logger.info('Got task details')
     return result
 
 def get_scheduled_planner_details():
+    logger.info('Getting Scheduled Planner details')
     result = {}
     filters = []
     filters.append({'name':'Tags','type':'multi_select','condition':'contains','value':'Task'})
@@ -57,9 +60,11 @@ def get_scheduled_planner_details():
     result['habit_no'] = len(query_notion_database(os.environ.get('CALENDAR_DB_ID'),filters).get('results',[]))
     filters[0]['value'] = "Financial"
     result['financial_task_no'] = len(query_notion_database(os.environ.get('CALENDAR_DB_ID'),filters).get('results',[]))
+    logger.info('Got Scheduled Planner details')
     return result
 
 def get_interesting_details():
+    logger.info('Getting Interesting details')
     result = {}
     gmt_timezone = pytz.timezone('GMT')
     current_time_gmt = datetime.datetime.now(gmt_timezone)
@@ -72,9 +77,11 @@ def get_interesting_details():
     result['week_back_no'] = len(query_notion_database(os.environ.get('INTERESTING_DB_ID'),filters).get('results',[]))
     filters[1]['value'] = one_month_back_gmt.strftime("%Y-%m-%dT%H:%M:%SZ")
     result['month_back_no'] = len(query_notion_database(os.environ.get('INTERESTING_DB_ID'),filters).get('results',[]))
+    logger.info('Got Interesting details')
     return result
 
 def get_quick_capture_details():
+    logger.info('Getting Quick Capture details')
     result = {}
     gmt_timezone = pytz.timezone('GMT')
     current_time_gmt = datetime.datetime.now(gmt_timezone)
@@ -86,9 +93,11 @@ def get_quick_capture_details():
     result['week_back_no'] = len(query_notion_database(os.environ.get('QUICK_CAPTURE_DB_ID'),filters).get('results',[]))
     filters[0]['value'] = one_month_back_gmt.strftime("%Y-%m-%dT%H:%M:%SZ")
     result['month_back_no'] = len(query_notion_database(os.environ.get('QUICK_CAPTURE_DB_ID'),filters).get('results',[]))
+    logger.info('Got Quick Capture details')
     return result
     
 def get_areas_details():
+    logger.info('Getting Area details')
     result = {}
     gmt_timezone = pytz.timezone('GMT')
     current_time_gmt = datetime.datetime.now(gmt_timezone)
@@ -99,9 +108,11 @@ def get_areas_details():
     result['week_back_no'] = len(query_notion_database(os.environ.get('AREAS_DB_ID'),filters).get('results',[]))
     filters[0]['value'] = one_month_back_gmt.strftime("%Y-%m-%dT%H:%M:%SZ")
     result['month_back_no'] = len(query_notion_database(os.environ.get('AREAS_DB_ID'),filters).get('results',[]))
+    logger.info('Got Area details')
     return result
 
 def get_journal_details():
+    logger.info('Getting Journal details')
     result = {}
     gmt_timezone = pytz.timezone('GMT')
     current_time_gmt = datetime.datetime.now(gmt_timezone)
@@ -114,4 +125,5 @@ def get_journal_details():
     result['week_back_no'] = len(query_notion_database(os.environ.get('JOURNAL_DB_ID'),filters).get('results',[]))
     filters[1]['value'] = one_month_back_gmt.strftime("%Y-%m-%dT%H:%M:%SZ")
     result['month_back_no'] = len(query_notion_database(os.environ.get('JOURNAL_DB_ID'),filters).get('results',[]))
+    logger.info('Got Journal details')
     return result
