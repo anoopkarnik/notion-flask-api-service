@@ -15,9 +15,9 @@ def query_notion_database(database_id,filters):
     results = []
     while has_more:
         body = construct_filter_body(filters,cursor)
-        logger.info(f'constructed filter body - {body}')
+        #logger.info(f'constructed filter body - {body}')
         response = query_database(database_id,body)
-        logger.info(response)
+        #logger.info(response)
         if len(response['results'])>0:
             has_more = response['has_more']
             cursor = response['next_cursor']
@@ -56,7 +56,7 @@ def modify_result(result):
     result_body = {}
     result_body['id'] = result['id']
     properties = result['properties']
-    # logger.info(properties)
+    # #logger.info(properties)
     for prop in properties.keys():
         result_body[prop] = unmodify_property(properties[prop])
     return result_body
@@ -73,9 +73,12 @@ def query_page_blocks(page_id,type):
                     parent_result_id = parent_result['id']
                     parent_result_name = parent_result['name']
                     child_results = query_page_blocks(parent_result_id,'child')
-                    results[parent_result_name] = child_results
+                    results[parent_result_name] ={}
+                    results[parent_result_name]['id'] = parent_result_id
+                    results[parent_result_name]['children'] = child_results
                 except:
                     logger.info(f"Error in {result}")
+            return results
         elif type == 'child':
             results = []
             for result in response['results']:
@@ -85,8 +88,9 @@ def query_page_blocks(page_id,type):
                     results.extend(child_result_name.split('\n'))
                 else:
                     results.append(child_result_name)
-    logger.info(results)
-    return results
+            return results
+    #logger.info(results)
+    return []
 
 
 def modify_block(block):
@@ -114,7 +118,7 @@ def modify_notion_page(page_id,properties):
     return result
 
 def construct_update_body(properties):
-    logger.info(properties)
+    #logger.info(properties)
     properties_body = {}
     for property in properties:
         properties_body[property['name']] = modify_property(property)
@@ -123,9 +127,9 @@ def construct_update_body(properties):
 
 def create_notion_page(database_id,properties):
     body = construct_create_body(database_id,properties)
-    logger.info(body)
+    #logger.info(body)
     response = create_page(body)
-    logger.info(response)
+    #logger.info(response)
     result = modify_result(response)
     return result
 
@@ -136,12 +140,12 @@ def construct_create_body(database_id,properties):
     body['parent']['database_id'] = database_id
     properties_body = {}
     
-    # logger.info("Creating body")
-    # logger.info(properties)
+    # #logger.info("Creating body")
+    # #logger.info(properties)
     for property in properties:
         properties_body[property['name']] = modify_property(property)
     body['properties'] = properties_body
-    # logger.info(body)
+    # #logger.info(body)
     return body
 
 def modify_property(property):
@@ -205,7 +209,7 @@ def unmodify_property(prop):
 def add_children_to_page(page_id,children):
     body = construct_children_body(children)
     response = append_block_children(page_id,body)
-    logger.info(response)
+    #logger.info(response)
     return {'message': "Added the children"}
 
 def construct_children_body(children):
@@ -216,7 +220,7 @@ def construct_children_body(children):
         children_body[child['type']] = modify_children_property(child)
         children_body_list.append(children_body)
     body['children'] = children_body_list
-    logger.info(body)
+    #logger.info(body)
     return body
 
 def modify_children_property(prop):
@@ -231,8 +235,14 @@ def modify_children_property(prop):
     
 def delete_page_blocks(page_id):
     response = get_block_children(page_id)
-    logger.info(response)
+    #logger.info(response)
     if len(response['results'])>0:
         for result in response['results']:
             delete_block(result['id'])
     return {'message': "Deleted the children"}
+
+def get_notion_page(page_id):
+    response = get_page(page_id)
+    #logger.info(response)
+    result = modify_result(response)
+    return result

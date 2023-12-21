@@ -8,6 +8,7 @@ from main.utils.scheduler import schedule_jobs
 from apscheduler.schedulers.background import BackgroundScheduler
 from dotenv import load_dotenv
 import logging
+from extensions import db
 
 load_dotenv()
 
@@ -17,6 +18,9 @@ def create_app():
                     format='%(asctime)s:%(levelname)s:%(message)s')
 	app.logger.info('Info level log')
 	app.logger.error('Error level log')
+	app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
+	app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+	db.init_app(app)
 	scheduler = BackgroundScheduler()
 	schedule_jobs(scheduler)
 	atexit.register(lambda: scheduler.shutdown())
@@ -28,4 +32,6 @@ def create_app():
 app = create_app()
 
 if __name__ == "__main__":
+	with app.app_context():
+		db.create_all()
 	app.run(debug=True)
