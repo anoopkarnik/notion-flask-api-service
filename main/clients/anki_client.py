@@ -80,3 +80,27 @@ def create_note(deck_name,front,back):
     logger.info(payload)
     response = requests.post(url,json=payload).json()
     return response
+
+def update_note(note_id, front,back):
+    back_html = "<ol>"
+    for item in back:
+        back_html += f"<li>{item}</li>"
+    back_html += "</ol>"
+    payload = {
+        "action": "updateNoteFields",
+        "version": 6,
+        "params": {
+            "note": {
+                "id": int(note_id),
+                "fields": {
+                    "Front": front,
+                    "Back": back_html
+                }
+            }
+        }
+    }
+    logger.info(payload)
+    response = requests.post(url,json=payload).json()
+    return response
+
+    

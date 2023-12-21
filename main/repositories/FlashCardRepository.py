@@ -31,6 +31,14 @@ class FlashCardRepository:
         db.session.commit()
         return new_flash_card
     
+    def update_flashcard(self, flash_card_id,updated_front,updated_back,updated_at):
+        flash_card = self.model.query.get(flash_card_id)
+        flash_card.updated_at = updated_at
+        flash_card.front = updated_front
+        flash_card.back = updated_back
+        db.session.commit()
+        return flash_card
+    
     def delete_flash_card(self, id):
         flash_card = self.model.query.get(id)
         db.session.delete(flash_card)

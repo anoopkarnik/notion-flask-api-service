@@ -6,7 +6,7 @@ import requests
 import time
 from ..services.notion_base_api import query_notion_database,create_notion_page,modify_notion_page,query_page_blocks,get_notion_page
 import logging
-from ..clients.anki_client import create_deck,get_all_cards,get_card_details,create_note
+from ..clients.anki_client import create_deck,get_all_cards,get_card_details,create_note,update_note
 from ..repositories.TopicRepository import TopicRepository
 from ..repositories.FlashCardRepository import FlashCardRepository
 
@@ -80,6 +80,39 @@ def create_notes_for_deck(deck_name,note_page_ids):
                     note_id = note_response['result'][0]
                 )
                 logger.info(f"Created flashcard {new_flashcard}")
+        else:
+            logger.info(f"Topic row found - {topic_row}")
+            deck_id = topic_row.deck_id
+            new_deck_name = topic_row.deck_name
+            card_ids = get_all_cards(new_deck_name)
+            flash_card_rows = flashcard_repo.get_by_deck_id(deck_id)
+            blocks = query_page_blocks(note_page_id,'parent')
+            for key,value in blocks.items():
+                if value['id'] not in [x.notion_block_id for x in flash_card_rows]:
+                    note_response = create_note(new_deck_name,key,value['children'])
+                    logger.info(note_response)
+                    logger.info(f"Created note for {key}")
+                    new_flashcard = flashcard_repo.create_flashcard(
+                        created_at=datetime.datetime.now(),
+                        updated_at=datetime.datetime.now(),
+                        notion_block_id=value['id'],
+                        deck_id=deck_id,
+                        front=key,
+                        topic_id=topic_row.id,
+                        note_id = note_response['result'][0]
+                    )
+                    logger.info(f"Created flashcard {new_flashcard}")
+                else:
+                    flash_card_row = [x for x in flash_card_rows if x.notion_block_id==value['id']][0]
+                    front = flash_card_row.front
+                    if front!=key:
+                        front = key
+                        updated_at = datetime.datetime.now()
+                        flashcard_repo.update_flashcard(flash_card_row.id,key,value['children'],updated_at)
+                        logger.info(f"Updated flashcard {flash_card_row}")
+                        note_response = update_note(flash_card_row.note_id,key,value['children'])
+                        logger.info(note_response)
+                        logger.info(f"Updated note for {key}")
 
 # Cases 
 # 1) New self area is added 

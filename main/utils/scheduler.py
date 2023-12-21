@@ -4,6 +4,7 @@ from ..services.update_dashboard_status_database import create_dashboard_status_
 from ..services.add_to_calendar import create_calendar_page
 from ..services.notion_base_api import query_database,create_page,modify_page
 from ..services.update_monthly_budget import get_financial_transaction_details
+from ..services.anki_connect import update_anki_decks
 import logging
 
 # Initialize the scheduler
@@ -67,7 +68,6 @@ def schedule_jobs(scheduler):
         name='Update financial transaction details',
         replace_existing=True)
     logging.info(f"Scheduled job: {job.name}")
-
     # Start the scheduler
     try:
         scheduler.start()
