@@ -66,29 +66,8 @@ def create_notes_for_deck(deck_name,note_page_ids):
             logger.info(f"Got card details for {new_deck_name}")
             blocks = query_page_blocks(note_page_id,'parent')
             logger.info(f"Blocks - {blocks}")
-            for key,value in blocks.items():
-                note_response = create_note(new_deck_name,key,value['children'])
-                logger.info(note_response)
-                logger.info(f"Created note for {key}")
-                new_flashcard = flashcard_repo.create_flashcard(
-                    created_at=datetime.datetime.now(),
-                    updated_at=datetime.datetime.now(),
-                    notion_block_id=value['id'],
-                    deck_id=deck_id,
-                    front=key,
-                    topic_id=new_topic.id,
-                    note_id = note_response['result'][0]
-                )
-                logger.info(f"Created flashcard {new_flashcard}")
-        else:
-            logger.info(f"Topic row found - {topic_row}")
-            deck_id = topic_row.deck_id
-            new_deck_name = topic_row.deck_name
-            card_ids = get_all_cards(new_deck_name)
-            flash_card_rows = flashcard_repo.get_by_deck_id(deck_id)
-            blocks = query_page_blocks(note_page_id,'parent')
-            for key,value in blocks.items():
-                if value['id'] not in [x.notion_block_id for x in flash_card_rows]:
+            if type(blocks)==dict:
+                for key,value in blocks.items():
                     note_response = create_note(new_deck_name,key,value['children'])
                     logger.info(note_response)
                     logger.info(f"Created note for {key}")
@@ -98,21 +77,44 @@ def create_notes_for_deck(deck_name,note_page_ids):
                         notion_block_id=value['id'],
                         deck_id=deck_id,
                         front=key,
-                        topic_id=topic_row.id,
+                        topic_id=new_topic.id,
                         note_id = note_response['result'][0]
                     )
                     logger.info(f"Created flashcard {new_flashcard}")
-                else:
-                    flash_card_row = [x for x in flash_card_rows if x.notion_block_id==value['id']][0]
-                    front = flash_card_row.front
-                    if front!=key:
-                        front = key
-                        updated_at = datetime.datetime.now()
-                        flashcard_repo.update_flashcard(flash_card_row.id,key,value['children'],updated_at)
-                        logger.info(f"Updated flashcard {flash_card_row}")
-                        note_response = update_note(flash_card_row.note_id,key,value['children'])
+        else:
+            logger.info(f"Topic row found - {topic_row}")
+            deck_id = topic_row.deck_id
+            new_deck_name = topic_row.deck_name
+            card_ids = get_all_cards(new_deck_name)
+            flash_card_rows = flashcard_repo.get_by_deck_id(deck_id)
+            blocks = query_page_blocks(note_page_id,'parent')
+            if type(blocks)==dict:
+                for key,value in blocks.items():
+                    if value['id'] not in [x.notion_block_id for x in flash_card_rows]:
+                        note_response = create_note(new_deck_name,key,value['children'])
                         logger.info(note_response)
-                        logger.info(f"Updated note for {key}")
+                        logger.info(f"Created note for {key}")
+                        new_flashcard = flashcard_repo.create_flashcard(
+                            created_at=datetime.datetime.now(),
+                            updated_at=datetime.datetime.now(),
+                            notion_block_id=value['id'],
+                            deck_id=deck_id,
+                            front=key,
+                            topic_id=topic_row.id,
+                            note_id = note_response['result'][0]
+                        )
+                        logger.info(f"Created flashcard {new_flashcard}")
+                    else:
+                        flash_card_row = [x for x in flash_card_rows if x.notion_block_id==value['id']][0]
+                        front = flash_card_row.front
+                        if front!=key:
+                            front = key
+                            updated_at = datetime.datetime.now()
+                            flashcard_repo.update_flashcard(flash_card_row.id,key,value['children'],updated_at)
+                            logger.info(f"Updated flashcard {flash_card_row}")
+                            note_response = update_note(flash_card_row.note_id,key,value['children'])
+                            logger.info(note_response)
+                            logger.info(f"Updated note for {key}")
 
 # Cases 
 # 1) New self area is added 
