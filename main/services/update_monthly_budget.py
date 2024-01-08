@@ -12,7 +12,8 @@ def get_financial_transaction_details():
     local_time = datetime.datetime.now()
     filters = []
     filters.append({'name':'Monthly Budget','type':'relation','condition':'is_not_empty','value':True})
-    filters.append({'type':'created_time','condition':'before','value':f"{local_time.year}-{local_time.month}-01"})
+    month = local_time.month if local_time.month > 9 else f"0{local_time.month}"
+    filters.append({'type':'created_time','condition':'before','value':f"{local_time.year}-{month}-01"})
     results = query_notion_database(os.environ.get('FINANCIAL_TRANSACTION_DB_ID'),filters).get('results',[])
     for result in results:
         update_transaction_details(result)
