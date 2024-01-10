@@ -5,8 +5,10 @@ notion_controller = Blueprint("notion_controller",__name__)
 
 @notion_controller.route("/database/<id>/query",methods=["POST"])
 def query_database_controller(id):
-	filters = request.json
-	results = query_notion_database(id,filters)
+	body = request.json
+	filters = body.get('filters',[])
+	sorts = body.get('sorts',[])
+	results = query_notion_database(id,filters,sorts)
 	return jsonify(results)
 
 @notion_controller.route("/database/<id>",methods=["POST"])

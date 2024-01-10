@@ -6,12 +6,23 @@ from ..services.add_to_calendar import create_calendar_page
 from ..services.update_monthly_budget import get_financial_transaction_details
 from ..services.voice_recording_to_notion_pages import transcribe_and_store
 from ..services.youtube_playlist_to_notion_pages import store
+from ..services.get_portfolio_details import get_complete_portfolio,get_project_details
 
 payload_controller = Blueprint("payload_controller",__name__)
 
 @payload_controller.route("/",methods=["GET"])
 def health_check():
 	return jsonify({"status":"success"})
+
+@payload_controller.route("/complete_portfolio",methods=["GET"])
+def get_complete_portfolio_controller():
+	complete_portfolio = get_complete_portfolio()
+	return jsonify(complete_portfolio)
+
+@payload_controller.route("/projects",methods=["GET"])
+def get_projects_controller():
+	project_details = get_project_details()
+	return jsonify(project_details)
 
 @payload_controller.route("/update_books",methods=["POST"])
 def update_books_controller():
@@ -56,3 +67,4 @@ def transcribe_youtube_video_controller():
 	data = request.json
 	store(data)
 	return jsonify({'message':'Transcribed And Stored Youtube Video'})
+

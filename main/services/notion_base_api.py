@@ -9,12 +9,13 @@ from ..clients.notion_client import query_database,create_page,modify_page,creat
 
 logger = logging.getLogger(__name__)
 
-def query_notion_database(database_id,filters):
+def query_notion_database(database_id,filters,sorts=[]):
     has_more = True
     cursor = None
     results = []
     while has_more:
         body = construct_filter_body(filters,cursor)
+        body = construct_sort_body(body,sorts)
         #logger.info(f'constructed filter body - {body}')
         response = query_database(database_id,body)
         #logger.info(response)
@@ -27,6 +28,28 @@ def query_notion_database(database_id,filters):
             has_more = False
     return {'results':results}
 
+def construct_sort_body(body,sorts):
+    if len(sorts)>0:
+        body['sorts'] = []
+        for sort in sorts:
+            body['sorts'].append(modify_sort(sort))
+    return body
+
+def modify_sort(sort):
+    if sort['type'] == 'last_edited_time':
+        return {'timestamp':'last_edited_time','direction':sort['direction']}
+    elif sort['type'] == 'date':
+        return {'property':sort['name'],'direction':sort['direction']}
+    elif sort['type'] == 'checkbox':
+        return {'property':sort['name'],'direction':sort['direction']}
+    elif sort['type'] == 'multi_select':
+        return {'property':sort['name'],'direction':sort['direction']}
+    elif sort['type'] == 'select':
+        return {'property':sort['name'],'direction':sort['direction']}
+    elif sort['type'] == 'created_time':
+        return {'timestamp':'created_time','direction':sort['direction']}
+    elif sort['type'] == 'relation':
+        return {'property':sort['name'],'direction':sort['direction']}
 
 def construct_filter_body(filters,cursor):
     filters_body = {'filter':{'and':[]}}
@@ -51,6 +74,8 @@ def modify_filter(filter):
         return {'timestamp':'created_time','created_time':{filter['condition']:filter['value']}}
     elif filter['type'] == 'relation':
         return {'property':filter['name'],'relation':{filter['condition']:filter['value']}}
+    elif filter['type'] == 'status':
+        return {'property':filter['name'],'status':{filter['condition']:filter['value']}}
 
 def modify_result(result):
     result_body = {}
@@ -63,7 +88,7 @@ def modify_result(result):
 
 def query_page_blocks(page_id,type):
     response = get_block_children(page_id)
-    logger.info(response)
+    # logger.info(response)
     if len(response['results'])>0:
         if type == 'parent':
             results = {}
@@ -243,6 +268,6 @@ def delete_page_blocks(page_id):
 
 def get_notion_page(page_id):
     response = get_page(page_id)
-    #logger.info(response)
+    # logger.info(f'{page_id} - {response}')
     result = modify_result(response)
     return result

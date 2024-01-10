@@ -77,7 +77,7 @@ def create_note(deck_name,front,back):
             }]
         }
     }
-    logger.info(payload)
+    logger.info(f"anki payload - {payload}")
     response = requests.post(url,json=payload).json()
     return response
 
@@ -99,7 +99,7 @@ def update_note(note_id, front,back):
             }
         }
     }
-    logger.info(payload)
+    logger.info(f"anki payload - {payload}")
     response = requests.post(url,json=payload).json()
     return response
 

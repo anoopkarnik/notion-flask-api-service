@@ -66,6 +66,7 @@ def modify_page(page_id,body):
 
 def get_page(page_id):
     url = f"{notion_url}/pages/{page_id}"
+    # logger.info(url)
     headers = {
         "Authorization": f"Bearer {token}",
         "Notion-Version": "2022-02-22"
