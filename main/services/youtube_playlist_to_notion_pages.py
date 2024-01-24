@@ -40,7 +40,7 @@ def get_details_from_transcript(transcript):
     10),main_points (covering all important things in bulleted lists),
      action_items (covering all actions possible as a task and or as habits in to_do lists),follow_up( Follow up questions which need to be 
     researched on in bulleted lists), get_arguments (arguments against the transcript in bulletted lists), stories (stories in the transcript in bulletted lists) ---"""+transcript  
-    chatgpt_response = get_chatgpt_reply(system_instructions,format,message,"gpt-4-1106-preview")
+    chatgpt_response = get_chatgpt_reply(system_instructions,format,message,"gpt-3.5-turbo-1106")
     logger.info(f"Response from chatgpt api - {chatgpt_response}")
     return chatgpt_response
     
