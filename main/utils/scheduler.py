@@ -21,26 +21,26 @@ def schedule_jobs(scheduler):
     logging.info(f"Scheduled job: {job.name}")
 
     # Schedule update_new_movie_tvshow() to run every 30 minutes
-    job = scheduler.add_job(
-        func=update_new_movies_tvshows,
-        trigger='cron',
-        minute='*/5',
-        id='update_new_movie_tvshow_job',
-        name='Update new movie and TV show database every 5 minutes',
-        replace_existing=True)
-    logging.info(f"Scheduled job: {job.name}")
+    # job = scheduler.add_job(
+    #     func=update_new_movies_tvshows,
+    #     trigger='cron',
+    #     minute='*/5',
+    #     id='update_new_movie_tvshow_job',
+    #     name='Update new movie and TV show database every 5 minutes',
+    #     replace_existing=True)
+    # logging.info(f"Scheduled job: {job.name}")
 
         # Schedule update_movie_tvshow() to run every 30 minutes
-    job = scheduler.add_job(
-        func=update_existing_tvshows,
-        trigger='cron',
-        day_of_week='fri',
-        hour=17,
-        minute=0,
-        id='update_existing_tvshow_job',
-        name='Update existing TV show database every friday 5 pm',
-        replace_existing=True)
-    logging.info(f"Scheduled job: {job.name}")
+    # job = scheduler.add_job(
+    #     func=update_existing_tvshows,
+    #     trigger='cron',
+    #     day_of_week='fri',
+    #     hour=17,
+    #     minute=0,
+    #     id='update_existing_tvshow_job',
+    #     name='Update existing TV show database every friday 5 pm',
+    #     replace_existing=True)
+    # logging.info(f"Scheduled job: {job.name}")
     
     job = scheduler.add_job(
         func=create_calendar_page,

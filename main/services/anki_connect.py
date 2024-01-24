@@ -16,7 +16,9 @@ def update_anki_decks():
     skill_trees_db_id = os.environ.get('SKILL_TREES_DB_ID')
     filters = []
     filters.append({'name':'Parent-task','type':'relation','condition':'is_empty','value':True})
+    logger.info("Querying notion database for skill trees")
     results = query_notion_database(skill_trees_db_id,filters).get('results',[])
+    logger.info(f"Got {len(results)} skill trees")
     for i,result in enumerate(results):
         deck_name=f"notes::{result['Type']}::{result['Skill Tree Name']}"
         create_deck(deck_name)
@@ -28,6 +30,7 @@ def get_subtask_data(subtasks,deck_name):
     for i,subtask in enumerate(subtasks):
         subtasks[i] = get_notion_page(subtask)
         new_deck_name= deck_name + f"::{subtasks[i]['Skill Tree Name']}"
+        logger.info(f"Creating deck {new_deck_name}")
         create_deck(new_deck_name)
         logger.info(f"Created deck {new_deck_name}")
         create_notes_for_deck(new_deck_name,subtasks[i]['Self'])

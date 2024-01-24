@@ -41,7 +41,7 @@ def query_database(database_id,filters_body):
         "Content-Type": "application/json"
     }
     response = requests.post(url,headers=headers,json=filters_body).json()
-    logger.info(response)
+    # logger.info(response)
     return response
     
 def create_page(body):
