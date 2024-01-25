@@ -152,9 +152,9 @@ def construct_update_body(properties):
 
 def create_notion_page(database_id,properties):
     body = construct_create_body(database_id,properties)
-    #logger.info(body)
+    logger.info(body)
     response = create_page(body)
-    #logger.info(response)
+    logger.info(response)
     result = modify_result(response)
     return result
 
@@ -234,7 +234,7 @@ def unmodify_property(prop):
 def add_children_to_page(page_id,children):
     body = construct_children_body(children)
     response = append_block_children(page_id,body)
-    #logger.info(response)
+    # logger.info(response)
     return {'message': "Added the children"}
 
 def construct_children_body(children):

@@ -36,7 +36,7 @@ def transcribe_and_store(data):
     notion_response = create_quick_capture_page(chatgpt_response,paragraphs,file_id)
     page_id = notion_response['id'].replace('-','')
     logger.info(f"Created quick capture page {file_id}")
-    notion_response = modify_quick_capture_page(page_id,chatgpt_response,paragraphs)
+    notion_response = modify_quick_capture_page(page_id,chatgpt_response,paragraphs,file_id)
     logger.info(f"Modified quick capture page {file_id}")
     return notion_response
 
@@ -78,7 +78,7 @@ def get_details_from_transcript(transcript):
     10),main_points (covering all important things),
      action_items (covering all actions possible as a task and or as habits),follow_up( Follow up questions which need to be 
     researched on), get_arguments (arguments against the transcript) ---"""+transcript  
-    chatgpt_response = get_chatgpt_reply(system_instructions,format,message,"gpt-3.5-turbo-1106")
+    chatgpt_response = get_chatgpt_reply(system_instructions,format,message,"gpt-4-1106-preview")
     logger.info(f"Response from chatgpt api - {chatgpt_response}")
     return chatgpt_response
     
@@ -109,7 +109,7 @@ def make_paragraphs(transcript,response):
     return allParagraphs
 
 def create_quick_capture_page(response,paragraphs,file_id):
-    URL = "https://drive.google.com/uc?id=" + file_id
+    URL = f"https://drive.google.com/file/d/{file_id}/view"
     gptTurboRate = 0.001
     tokens = response['usage']['total_tokens']
     chat_cost = round((float(tokens)*gptTurboRate/1000),3)
@@ -124,7 +124,7 @@ def create_quick_capture_page(response,paragraphs,file_id):
     logger.info("Created Page")
     return response
 
-def modify_quick_capture_page(page_id,chatgpt_response,paragraphs):
+def modify_quick_capture_page(page_id,chatgpt_response,paragraphs,file_id):
     logger.info(f"Updating Page {page_id}")
     date = datetime.today().strftime('%Y-%m-%d')
     children = []
@@ -144,22 +144,23 @@ def modify_quick_capture_page(page_id,chatgpt_response,paragraphs):
         children.append({'type':'bulleted_list_item','value':item})
     children.append({'type':'heading_1','value':'Potential Action Items'})
     children.append({'type':'heading_2','value':'Potential Tasks'})
-    for item in content['action_items']['tasks']:
+    for item in content['action_items'].get('tasks',[]):
         children.append({'type':'to_do','value':item})
     children.append({'type':'heading_2','value':'Potential Habits'}) 
-    for item in content['action_items']['habits']:
+    for item in content['action_items'].get('habits',[]):
         children.append({'type':'to_do','value':item})
     children.append({'type':'heading_1','value':'Follow Up Questions'})
-    for item in content['follow_up']:
+    for item in content.get('follow_up',[]):
         children.append({'type':'bulleted_list_item','value':item})
     children.append({'type':'heading_1','value':'Arguments against the thoughts'})
-    for item in content['arguments']:
+    for item in content.get('arguments',[]):
         children.append({'type':'bulleted_list_item','value':item})
     children.append({'type':'heading_1','value':'Transcript'}) 
     for transcript in paragraphs['transcript']:
         children.append({'type':'paragraph','value':transcript})
-    response = add_children_to_page(page_id,children)
-    logger.info("Updated Page")
+    for i in range(0,len(children),100):
+        response = add_children_to_page(page_id,children[i:i+100])
+        logger.info(f"Updated Page with blocks :{response}")
     return response
 
 # FILE_ID = '1iszqu-2WdfLhsy6L8Ww6ec5cytZOZj2h'

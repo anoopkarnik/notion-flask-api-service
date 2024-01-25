@@ -5,7 +5,7 @@ from ..services.update_dashboard_status_database import create_dashboard_status_
 from ..services.add_to_calendar import create_calendar_page
 from ..services.update_monthly_budget import get_financial_transaction_details
 from ..services.voice_recording_to_notion_pages import transcribe_and_store
-from ..services.youtube_playlist_to_notion_pages import store
+from ..services.youtube_notes_to_notion_pages import store_youtube_videos
 from ..services.get_portfolio_details import get_complete_portfolio,get_project_details
 
 payload_controller = Blueprint("payload_controller",__name__)
@@ -65,6 +65,6 @@ def transcribe_voice_recording_controller():
 @payload_controller.route("/transcribe_youtube_video",methods=["POST"])
 def transcribe_youtube_video_controller():
 	data = request.json
-	store(data)
+	store_youtube_videos(data)
 	return jsonify({'message':'Transcribed And Stored Youtube Video'})
 
