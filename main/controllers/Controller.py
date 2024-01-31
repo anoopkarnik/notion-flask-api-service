@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, Response, stream_with_context
 from ..services.update_book_database import update_books
 from ..services.update_movie_tvshow_database import update_new_movies_tvshows,update_existing_tvshows
 from ..services.update_dashboard_status_database import create_dashboard_status_updates_page
@@ -7,6 +7,7 @@ from ..services.update_monthly_budget import get_financial_transaction_details
 from ..services.voice_recording_to_notion_pages import transcribe_and_store
 from ..services.youtube_notes_to_notion_pages import store_youtube_videos
 from ..services.get_portfolio_details import get_complete_portfolio,get_project_details
+import json
 
 payload_controller = Blueprint("payload_controller",__name__)
 
@@ -21,8 +22,11 @@ def get_complete_portfolio_controller():
 
 @payload_controller.route("/projects",methods=["GET"])
 def get_projects_controller():
-	project_details = get_project_details()
-	return jsonify(project_details)
+	project_details_generator = get_project_details()
+	def generate():
+		for project_detail in project_details_generator:
+			yield json.dumps(project_detail) + '\n'
+	return Response(stream_with_context(generate()), content_type='application/json')
 
 @payload_controller.route("/update_books",methods=["POST"])
 def update_books_controller():
