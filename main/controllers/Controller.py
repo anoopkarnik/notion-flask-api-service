@@ -17,12 +17,12 @@ payload_controller = Blueprint("payload_controller",__name__)
 def health_check():
 	return jsonify({"status":"success"})
 
-@payload_controller.route("/complete_portfolio",methods=["GET"])
+@payload_controller.route("/complete_portfolio",methods=["POST"])
 def get_complete_portfolio_controller():
 	complete_portfolio = get_complete_portfolio()
 	return jsonify(complete_portfolio)
 
-@payload_controller.route("/projects",methods=["GET"])
+@payload_controller.route("/projects",methods=["POST"])
 @cross_origin()
 def get_projects_controller():
 	project_details_generator = get_project_details()
