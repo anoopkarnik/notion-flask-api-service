@@ -18,7 +18,7 @@ def get_project_details():
     for project in projects:
         project['Frameworks'] = get_relations_details(project['Frameworks'])
         project['Languages'] = get_relations_details(project['Languages'])
-        project['Place of Work/Education'] = get_relations_details(project['Place of Work/Education'])
+        project['PlaceOfWork/Education'] = get_relations_details(project['PlaceOfWork/Education'])
         project['Tools'] = get_relations_details(project['Tools'])
         yield project
 

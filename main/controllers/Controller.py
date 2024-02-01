@@ -8,6 +8,8 @@ from ..services.voice_recording_to_notion_pages import transcribe_and_store
 from ..services.youtube_notes_to_notion_pages import store_youtube_videos
 from ..services.get_portfolio_details import get_complete_portfolio,get_project_details
 import json
+from flask_cors import cross_origin
+
 
 payload_controller = Blueprint("payload_controller",__name__)
 
@@ -21,6 +23,7 @@ def get_complete_portfolio_controller():
 	return jsonify(complete_portfolio)
 
 @payload_controller.route("/projects",methods=["GET"])
+@cross_origin()
 def get_projects_controller():
 	project_details_generator = get_project_details()
 	def generate():

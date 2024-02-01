@@ -11,3 +11,4 @@ requests
 youtube_transcript_api
 psycopg2-binary
 google-api-python-client
+flask_cors
