@@ -16,10 +16,10 @@ def get_project_details():
     filters.append({'name':'Parent project', 'type':'relation', 'condition':'is_empty', 'value':True})
     projects = query_notion_database(projects_db_id,filters,sorts).get('results',[])
     for project in projects:
-        project['Frameworks'] = get_relations_details(project['Frameworks'])
-        project['Languages'] = get_relations_details(project['Languages'])
-        project['PlaceOfWork/Education'] = get_relations_details(project['PlaceOfWork/Education'])
-        project['Tools'] = get_relations_details(project['Tools'])
+        # project['Frameworks'] = get_relations_details(project['Frameworks'])
+        # project['Languages'] = get_relations_details(project['Languages'])
+        # project['PlaceOfWork/Education'] = get_relations_details(project['PlaceOfWork/Education'])
+        # project['Tools'] = get_relations_details(project['Tools'])
         yield project
 
 

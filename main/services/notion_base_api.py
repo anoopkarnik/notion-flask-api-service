@@ -6,6 +6,7 @@ import requests
 import time
 import logging
 from ..clients.notion_client import query_database,create_page,modify_page,create_database,get_page,get_block_children,delete_block,append_block_children
+import numpy as np
 
 logger = logging.getLogger(__name__)
 
@@ -215,7 +216,7 @@ def unmodify_property(prop):
     elif prop['type'] == 'rich_text':
         return prop['rich_text'][0]['text']['content'] if len(prop['rich_text']) > 0 else ''
     elif prop['type'] == 'rollup':
-        return unmodify_property(prop['rollup'])
+        return np.array(unmodify_property(prop['rollup'])).flatten().tolist()
     elif prop['type'] == 'people':
         return [x['name'] for x in prop['people']]
     elif prop['type'] == 'status':
@@ -229,7 +230,10 @@ def unmodify_property(prop):
     elif prop['type'] == 'multi_select':
         return [x['name'] for x in prop['multi_select']]
     elif prop['type'] == 'array':
-        return unmodify_property(prop['array'][0]) if len(prop['array']) > 0 else ''
+        return [unmodify_property(x) for x in prop['array']]
+    elif prop['type'] == 'files':
+        return [x['name'] for x in prop['files']]
+
 
 def add_children_to_page(page_id,children):
     body = construct_children_body(children)
