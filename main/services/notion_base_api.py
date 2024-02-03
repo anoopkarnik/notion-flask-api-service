@@ -17,7 +17,7 @@ def query_notion_database(database_id,filters,sorts=[]):
     while has_more:
         body = construct_filter_body(filters,cursor)
         body = construct_sort_body(body,sorts)
-        #logger.info(f'constructed filter body - {body}')
+        logger.info(f'constructed filter body - {body}')
         response = query_database(database_id,body)
         #logger.info(response)
         if len(response['results'])>0:

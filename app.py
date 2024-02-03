@@ -21,9 +21,10 @@ def create_app():
 	app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
 	app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 	db.init_app(app)
-	scheduler = BackgroundScheduler()
-	schedule_jobs(scheduler)
-	atexit.register(lambda: scheduler.shutdown())
+	if os.environ.get('SCHEDULER_RUNNING',True):
+		scheduler = BackgroundScheduler()
+		schedule_jobs(scheduler)
+		atexit.register(lambda: scheduler.shutdown())
 	app.register_blueprint(Controller.payload_controller)
 	app.register_blueprint(AnkiController.anki_controller)
 	app.register_blueprint(NotionController.notion_controller)

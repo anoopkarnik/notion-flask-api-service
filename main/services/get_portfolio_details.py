@@ -13,6 +13,7 @@ def get_project_details():
     projects_db_id = os.environ.get('PROJECTS_DB_ID')
     filters,sorts = [],[]
     filters.append({'name':'Status','type':'status','condition':'does_not_equal','value': 'Not Started'})
+    filters.append({'name':'Status','type':'status','condition':'does_not_equal','value': 'Cancelled'})
     filters.append({'name':'Parent project', 'type':'relation', 'condition':'is_empty', 'value':True})
     projects = query_notion_database(projects_db_id,filters,sorts).get('results',[])
     for project in projects:
