@@ -233,6 +233,8 @@ def unmodify_property(prop):
         return [unmodify_property(x) for x in prop['array']]
     elif prop['type'] == 'files':
         return [x['name'] for x in prop['files']]
+    elif prop['type'] == 'url':
+        return prop['url']
 
 
 def add_children_to_page(page_id,children):
