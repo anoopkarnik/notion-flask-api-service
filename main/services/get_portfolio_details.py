@@ -32,27 +32,27 @@ def get_complete_portfolio():
     filters.append({"name":"Education Type","type":"select","condition":"is_not_empty","value":True})
     sorts.append({"name":"Start Date","type":"date","direction":"descending"})
     education = query_notion_database(pow_db_id,filters,sorts).get('results',[])
-    education = add_relation_details_to_results(education,'Projects')
+    # education = add_relation_details_to_results(education,'Projects')
     filters,sorts = [],[]
     filters.append({"name":"Type","type":"multi_select","condition":"contains","value":'Full Time'})
     sorts.append({"name":"Start Date","type":"date","direction":"descending"})
     works = query_notion_database(pow_db_id,filters,sorts).get('results',[])
-    works = add_relation_details_to_results(works,'Projects')
+    # works = add_relation_details_to_results(works,'Projects')
     filters,sorts = [],[]
     filters.append({"name":"Type","type":"multi_select","condition":"contains","value":'Internship'})
     sorts.append({"name":"Start Date","type":"date","direction":"descending"})
     internships = query_notion_database(pow_db_id,filters,sorts).get('results',[])
-    internships = add_relation_details_to_results(internships,'Projects')
+    # internships = add_relation_details_to_results(internships,'Projects')
     filters,sorts = [],[]
     filters.append({"name":"Type","type":"multi_select","condition":"contains","value":'Part Time'})
     sorts.append({"name":"Start Date","type":"date","direction":"descending"})
     part = query_notion_database(pow_db_id,filters,sorts).get('results',[])
-    part = add_relation_details_to_results(part,'Projects')
+    # part = add_relation_details_to_results(part,'Projects')
     filters,sorts = [],[]
     filters.append({"name":"Type","type":"multi_select","condition":"contains","value":'Self Employed'})
     sorts.append({"name":"Start Date","type":"date","direction":"descending"})
     self_employed = query_notion_database(pow_db_id,filters,sorts).get('results',[])
-    self_employed = add_relation_details_to_results(self_employed,'Projects')
+    # self_employed = add_relation_details_to_results(self_employed,'Projects')
     result['education'] = education
     result['works'] = works
     result['internships'] = internships

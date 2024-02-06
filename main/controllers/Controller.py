@@ -18,6 +18,7 @@ def health_check():
 	return jsonify({"status":"success"})
 
 @payload_controller.route("/complete_portfolio",methods=["POST"])
+@cross_origin()
 def get_complete_portfolio_controller():
 	complete_portfolio = get_complete_portfolio()
 	return jsonify(complete_portfolio)

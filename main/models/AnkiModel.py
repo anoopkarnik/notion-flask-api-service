@@ -25,7 +25,7 @@ class FlashCardModel(db.Model):
 	updated_at = db.Column(db.String(100))
 	notion_block_id = db.Column(db.String(100))
 	deck_id = db.Column(db.String(100))
-	front = db.Column(db.String(500))
+	front = db.Column(db.String(5000))
 	topic_id = db.Column(db.Integer, db.ForeignKey('notion_schema.topic.id'))
 	note_id = db.Column(db.String(100))
 
