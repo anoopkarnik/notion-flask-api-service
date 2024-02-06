@@ -6,7 +6,7 @@ from ..services.add_to_calendar import create_calendar_page
 from ..services.update_monthly_budget import get_financial_transaction_details
 from ..services.voice_recording_to_notion_pages import transcribe_and_store
 from ..services.youtube_notes_to_notion_pages import store_youtube_videos
-from ..services.get_portfolio_details import get_complete_portfolio,get_project_details
+from ..services.get_portfolio_details import get_complete_portfolio,get_project_details,get_all_skills
 import json
 from flask_cors import cross_origin
 
@@ -22,6 +22,12 @@ def health_check():
 def get_complete_portfolio_controller():
 	complete_portfolio = get_complete_portfolio()
 	return jsonify(complete_portfolio)
+
+@payload_controller.route("/skills",methods=["POST"])
+@cross_origin()
+def get_skills_controller():
+	skills = get_all_skills()
+	return jsonify(skills)
 
 @payload_controller.route("/projects",methods=["POST"])
 @cross_origin()

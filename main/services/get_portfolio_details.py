@@ -23,7 +23,21 @@ def get_project_details():
         # project['Tools'] = get_relations_details(project['Tools'])
         yield project
 
-
+def get_all_skills():
+    projects_db_id = os.environ.get('PROJECTS_DB_ID')
+    filters,sorts = [],[]
+    filters.append({'name':'Status','type':'status','condition':'does_not_equal','value': 'Not Started'})
+    filters.append({'name':'Status','type':'status','condition':'does_not_equal','value': 'Cancelled'})
+    filters.append({'name':'Parent project', 'type':'relation', 'condition':'is_empty', 'value':True})
+    projects = query_notion_database(projects_db_id,filters,sorts).get('results',[])
+    languages = set()
+    frameworks = set()
+    tools = set()
+    for project in projects:
+        languages.update(project.get('LanguagesUsed',[]))
+        frameworks.update(project.get('FrameworksUsed',[]))
+        tools.update(project.get('ToolsUsed',[]))
+    return {'languages':list(languages),'frameworks':list(frameworks),'tools':list(tools)}
 
 def get_complete_portfolio():
     result = {}
